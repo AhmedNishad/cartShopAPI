@@ -1,0 +1,16 @@
+﻿@model Shopping.Models.OrdersViewModel
+@{
+    ViewData["Title"] = "ViewOrders";
+}
+
+<h1>ViewOrders</h1>
+
+@foreach (var order in Model.Orders)
+{
+    <h3>@order.Customer.Name </h3>
+    <h4>@order.Total</h4>
+    <h4>@order.Date.ToShortDateString()</h4>
+    <a asp-action="ViewOrder" asp-route-orderId="@order.Id">Edit</a>
+    <hr/>
+}
+

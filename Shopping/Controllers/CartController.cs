@@ -31,9 +31,55 @@ namespace Shopping.Controllers
         public IActionResult Index(int customerId, DateTime date, List<OrderLineItem> lineItems)
         {
             int result = cartData.AddOrder(customerId, date, lineItems);
+            date.AddHours(DateTime.Now.Hour);
             if (result == 0)
+            {
+                
+                
                 return NotFound();
-            return RedirectToAction("Index", "Home");
+            }
+            return RedirectToAction("ViewOrder", new { orderId = result });
+        }
+        [HttpGet]
+        public IActionResult ViewOrder(int orderId)
+        {
+            var model = new OrderViewModel();
+            model.LineItems = cartData.GetLineItemsForOrder(orderId);
+            model.Order = cartData.GetOrderById(orderId);
+            model.Products = cartData.GetProducts();
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult ViewOrder(List<OrderLineItem> UpdatedItems)
+        {
+            int result = cartData.UpdateLineItems(UpdatedItems);
+            if(result == 0)
+            {
+                return NotFound();
+            }
+            return RedirectToAction("ViewOrder", new { orderId = result });
+        }
+
+        [HttpPost]
+        public IActionResult UpdateLineItem(int lineId, OrderLineItem orderLineItem, int productId)
+        {
+            orderLineItem.Product = cartData.GetProductById(productId);
+            orderLineItem.Total = orderLineItem.Product.UnitPrice * orderLineItem.Quantity;
+            int result = cartData.UpdateLineItem(lineId, orderLineItem);
+            if(result == 0)
+            {
+                return NotFound();
+            }
+            return RedirectToAction("ViewOrder", new { orderId = result });
+        }
+
+        public IActionResult ViewOrders()
+        {
+            var model = new OrdersViewModel();
+            model.Customers = cartData.GetCustomers();
+            model.Orders = cartData.GetOrders();
+            return View(model);
         }
     }
 }

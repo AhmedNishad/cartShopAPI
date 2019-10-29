@@ -11,8 +11,9 @@ namespace Shopping.Entities
         public int Id { get; set; }
         public int Total { get; set; }
         [Required]
-        public Customer Customer { get; set; }
+        public Customer Customer { get ; set; }
         [Required]
         public DateTime Date { get; set; }
+        public List<OrderLineItem> LineItems { get; set; }
     }
 }

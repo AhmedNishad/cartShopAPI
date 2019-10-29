@@ -1,0 +1,62 @@
+﻿@model Shopping.Models.OrderViewModel
+@{
+    ViewData["Title"] = "ViewOrder";
+}
+
+<a asp-action="ViewOrders">Show All</a>
+<h1>ViewOrder - @Model.Order.Customer.Name</h1>
+<h3>@Model.Order.Date.ToShortDateString()</h3>
+
+
+
+<form action="" method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="editing-form-field">
+                <td>
+                    <select id="product-picker" name="productId">
+                        @foreach (var product in Model.Products)
+                        {
+                            <option data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                                    value="@product.Id">
+                                @product.ProductName
+                            </option>
+                        }
+                    </select>
+                </td>
+                <td><input id="quantity-input" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
+                <td><button id="add-line-item" asp-action="UpdateLineItem">Edit</button></td>
+            </tr>
+            @foreach (var item in Model.LineItems)
+            {
+                <tr class="editable-item" data-line-item-id="@item.Id" data-product-price="@item.Product.UnitPrice" data-product-id="@item.Product.Id">
+                    <td>@item.Product.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Total</td>
+                    <td></td>
+                </tr>
+
+            }
+
+        </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><h4>Total</h4></td>
+                            <td></td>
+                            <td><h4>@Model.Order.Total</h4></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+
+                @*<input type="submit" disabled />*@
+            </form>
+
+            <script src="~/js/editOrder.js"></script>

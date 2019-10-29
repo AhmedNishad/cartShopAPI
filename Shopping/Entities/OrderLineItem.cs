@@ -11,6 +11,7 @@ namespace Shopping.Entities
         public int Id { get; set; }
         [Required]
         public Order Order { get; set; }
+        public int OrderId { get; set; }
         public int Quantity { get; set; }
         public int Total { get; set; }
         [Required]
