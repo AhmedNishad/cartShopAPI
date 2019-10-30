@@ -13,9 +13,12 @@ namespace Shopping.Services
         Product GetProductById(int id);
         List<OrderLineItem> GetLineItemsForOrder(int OrderId);
         Order GetOrderById(int OrderId);
-        int AddOrder(int CustomerId, DateTime date, List<OrderLineItem> orderLineItems);
+        List<OrderLineItem> AddOrder(int CustomerId, DateTime date, List<OrderLineItem> orderLineItems);
         List<Order> GetOrders();
         int UpdateLineItems(List<OrderLineItem> lineItems);
         int UpdateLineItem(int lineId, OrderLineItem lineItem);
+        int AddProduct(Product product);
+        int UpdateProductQuantity(int toReduce, int productId);
+        int QuantityUpdateForProduct(int ProductId, int newQuantity);
     }
 }

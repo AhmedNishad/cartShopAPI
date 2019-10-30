@@ -5,17 +5,21 @@
 
 <h1>Add Order</h1>
 <a asp-action="ViewOrders">Show Orders</a>
+<a asp-action="ViewProducts">Show Products</a>
 <form action="" method="post">
     <label asp-for="@Model.AssociatedCustomer">Customer</label>
+
+
+    
     <select name="customerId">
-        @foreach(var customer in Model.Customers)
+        @foreach (var customer in Model.Customers)
         {
             <option value="@customer.Id">@customer.Name</option>
         }
     </select>
     <label for="data">Date</label>
     <input name="date" id="date-picker" type="date" />
-    
+
     <table class="table">
         <tr>
             <th>Product</th>
@@ -24,25 +28,38 @@
             <th>Actions</th>
         </tr>
         <tbody id="line-item-container">
+            @if (Model.LineItems != null)
+            {
+                @for (int i = 0; i < Model.LineItems.Count; i++)
+                {
+                    <tr>
+                        <td><input type="hidden" value="@Model.LineItems[i].Product.Id" name="[@i].product.id" /> @Model.LineItems[i].Product.ProductName</td>
+                        <td><input type="hidden" value="@Model.LineItems[i].Quantity" name="[@i].quantity" />@Model.LineItems[i].Quantity</td>
+                        <td><input type="hidden" value="@Model.LineItems[i].Total" name="[@i].total" /> @Model.LineItems[i].Total</td>
+                        <td><button class="btn btn-danger">Remove</button></td>
+                    </tr>
+                }
+            }
             @*<tr>
-                <td><input type="hidden" value="2" name="[0].product.id" /> Carrots</td>
-                <td><input type="hidden" value="12" name="[0].quantity" />12</td>
-                <td><input type="hidden" value="120" name="[0].total" />120</td>
-                <td><button>Remove</button></td>
-            </tr>
-            <tr>
-                <td><input type="hidden" value="1" name="[1].product.id" /> Maggots</td>
-                <td><input type="hidden" value="12" name="[1].quantity" />2</td>
-                <td><input type="hidden" value="120" name="[1].total" />240</td>
-                <td><button>Remove</button></td>
-            </tr>*@
+                    <td><input type="hidden" value="2" name="[0].product.id" /> Carrots</td>
+                    <td><input type="hidden" value="12" name="[0].quantity" />12</td>
+                    <td><input type="hidden" value="120" name="[0].total" />120</td>
+                    <td><button>Remove</button></td>
+                </tr>
+                <tr>
+                    <td><input type="hidden" value="1" name="[1].product.id" /> Maggots</td>
+                    <td><input type="hidden" value="12" name="[1].quantity" />2</td>
+                    <td><input type="hidden" value="120" name="[1].total" />240</td>
+                    <td><button>Remove</button></td>
+                </tr>*@
         </tbody>
         <tr>
             <td>
-                <select id="product-picker" name="productId">
+
+                <select class="dropdown" id="product-picker" name="productId">
                     @foreach (var product in Model.Products)
                     {
-                        <option data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                        <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
                                 value="@product.Id">
                             @product.ProductName
                         </option>
@@ -51,13 +68,13 @@
             </td>
             <td><input min="1" id="quantity-input" type="number" name="quantity" /></td>
             <td><h4 id="quantity-output"></h4></td>
-            <td><button id="add-line-item">Add</button></td>
+            <td><button id="add-line-item" class="btn btn-dark">Add</button></td>
         </tr>
     </table>
 
     <h2>Grand Total : <span id="total-output"></span></h2>
 
-    <input id="submit-button" type="submit"/>
+    <input class="btn btn-success" id="submit-button" type="submit" />
 </form>
 
 <script src="~/js/cartEditor.js"></script>

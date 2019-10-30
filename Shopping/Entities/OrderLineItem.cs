@@ -9,12 +9,12 @@ namespace Shopping.Entities
     public class OrderLineItem
     {
         public int Id { get; set; }
-        [Required]
         public Order Order { get; set; }
         public int OrderId { get; set; }
+        [Required]
+        [Range(1, 1000)]
         public int Quantity { get; set; }
         public int Total { get; set; }
-        [Required]
         public Product Product{ get; set; }
     }
 }

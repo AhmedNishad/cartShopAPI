@@ -15,6 +15,8 @@ for (let i = 0; i < editableItems.length; i++) {
     }
 }
 
+
+
 function addEditedElement(e) {
    // e.preventDefault()
 }
@@ -27,5 +29,8 @@ function editingItem(e) {
         editingFormField.children[1].children[1].value = e.target.parentElement.getAttribute('data-line-item-id')
         e.target.parentElement.insertAdjacentElement("afterend",editingFormField)
         editingFormField.style.display = 'block'
+        console.log(e.target.parentElement.getAttribute('data-product-id'))
+        editingFormField.children[0].firstElementChild.value = e.target.parentElement.getAttribute('data-product-id')
+        editingFormField.children[1].firstElementChild.value = parseInt(e.target.parentElement.children[1].innerText)
     }
 }

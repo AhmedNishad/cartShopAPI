@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Shopping.Entities;
 using Shopping.Models;
 using Shopping.Services;
 
 namespace Shopping.Controllers
 {
-    [Authorize]
     public class CartController : Controller
     {
         private readonly ICartData cartData;
@@ -20,25 +20,65 @@ namespace Shopping.Controllers
             this.cartData = cartData;
         }
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(List<OrderLineItem> lineItems = null)
         {
             var model = new IndexViewModel();
+            model.LineItems = lineItems;
             model.Customers = cartData.GetCustomers();
             model.Products = cartData.GetProducts();
             return View(model);
         }
         [HttpPost]
-        public IActionResult Index(int customerId, DateTime date, List<OrderLineItem> lineItems)
+        public IActionResult Index(DateTime date, int customerId, List<OrderLineItem> lineItems)
         {
-            int result = cartData.AddOrder(customerId, date, lineItems);
-            date.AddHours(DateTime.Now.Hour);
-            if (result == 0)
+            try
             {
+                // Manual Validation. View Models To be implemented ... 
+                if (customerId == 0)
+                {
+                    throw new Exception("Please Select a customer");
+                }
+                if(lineItems.Count < 1)
+                {
+                    throw new Exception("Please add line items");
+                }
+                if (date.ToShortDateString() == "1/1/0001")
+                {
+                    throw new Exception("Please Enter Date");
+                }
+                foreach (var item in lineItems)
+                {
+                    item.Product = cartData.GetProductById(item.Product.Id);
+                    item.Total = item.Product.UnitPrice * item.Quantity;
+                }
                 
+                date.AddHours(DateTime.Now.Hour);
+                var results = cartData.AddOrder(customerId, date, lineItems);
+                var last = new OrderLineItem();
+                if(results.Count == 0)
+                {
+                    throw new Exception($"There are inadequate products");
+                }
+                else
+                {
+                    last = results[results.Count - 1];
+                }
+                results.Remove(last);
+                if (results.Count > 0)
+                {
+                    var model = new IndexViewModel();
+                    model.LineItems = results;
+                    model.Customers = cartData.GetCustomers();
+                    model.Date = date;
+                    model.Products = cartData.GetProducts();
+                    return View(model);
+                }
                 
-                return NotFound();
+                return RedirectToAction("ViewOrder", new { orderId = last.OrderId });
+            }catch(Exception e)
+            {
+                return View("ErrorDisplay", new ErrorModel { Message = e.Message });
             }
-            return RedirectToAction("ViewOrder", new { orderId = result });
         }
         [HttpGet]
         public IActionResult ViewOrder(int orderId)
@@ -50,6 +90,7 @@ namespace Shopping.Controllers
             return View(model);
         }
 
+        // Unimplimented
         [HttpPost]
         public IActionResult ViewOrder(List<OrderLineItem> UpdatedItems)
         {
@@ -67,9 +108,9 @@ namespace Shopping.Controllers
             orderLineItem.Product = cartData.GetProductById(productId);
             orderLineItem.Total = orderLineItem.Product.UnitPrice * orderLineItem.Quantity;
             int result = cartData.UpdateLineItem(lineId, orderLineItem);
-            if(result == 0)
+            if(result < 0)
             {
-                return NotFound();
+                return View("ErrorDisplay", new ErrorModel { Message = $"There are inadequate products, you have requested {-1 * result} more than we capacity for {orderLineItem.Product.ProductName}" });
             }
             return RedirectToAction("ViewOrder", new { orderId = result });
         }
@@ -80,6 +121,47 @@ namespace Shopping.Controllers
             model.Customers = cartData.GetCustomers();
             model.Orders = cartData.GetOrders();
             return View(model);
+        }
+
+        public IActionResult ViewProducts()
+        {
+            var model = new ProductsViewModel();
+            model.Products = cartData.GetProducts();
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ViewProduct(int productId)
+        {
+            var model = new Product();
+            model = cartData.GetProductById(productId);
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult ViewProduct(int productId, int newQuantity)
+        {
+            int result = cartData.QuantityUpdateForProduct(productId, newQuantity);
+            return RedirectToAction("ViewProduct", new { productId = result });
+        }
+
+        [HttpGet]
+        public IActionResult AddProduct()
+        {
+            var model = new Product();
+            
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult AddProduct(Product product)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(product);
+            }
+            int result = cartData.AddProduct(product);
+            return RedirectToAction("ViewProduct", new { productId = result });
         }
     }
 }

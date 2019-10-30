@@ -51,7 +51,17 @@ namespace Shopping
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles( new StaticFileOptions()
+            {
+                OnPrepareResponse = context =>
+                {
+                    if (env.IsDevelopment())
+                    {
+                        context.Context.Response.Headers.Add("Cache-Control", "no-cache, no-store");
+                        context.Context.Response.Headers.Add("Expires", "-1");
+                    }
+                }
+            });
             app.UseAuthentication();
             app.UseCookiePolicy();
 

@@ -1,0 +1,15 @@
+﻿@model Shopping.Models.ProductsViewModel
+@{
+    ViewData["Title"] = "ViewProducts";
+}
+
+<h1>List of Products</h1>
+<a class="btn btn-secondary" asp-action="AddProduct">Add New</a>
+
+@foreach(var product in Model.Products)
+{
+    <h2>@product.ProductName</h2>
+    <h3>@product.QuantityAtHand</h3>
+    <a asp-action="ViewProduct" asp-route-productId="@product.Id">View Product</a>
+    <hr />
+}

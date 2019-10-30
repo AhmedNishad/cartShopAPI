@@ -1,5 +1,5 @@
 ﻿var datePicker = document.getElementById("date-picker");
-var date = new Date()
+var date = new Date();
 datePicker.value = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 var productPicker = document.getElementById("product-picker");
 var quantityInput = document.getElementById("quantity-input");
@@ -7,7 +7,7 @@ var quantityOutput = document.getElementById("quantity-output");
 var addLineItem = document.getElementById("add-line-item");
 var lineItemContainer = document.getElementById("line-item-container");
 var totalOutput = document.getElementById("total-output");
-var idCounter = 0
+var idCounter = 0;
 var submitButton = document.getElementById("submit-button");
 
 submitButton.disabled = true;
@@ -21,6 +21,17 @@ quantityInput.addEventListener('input', (e) => {
         addLineItem.disabled = false
     }
 })
+
+function addFunctionality() {
+    if (lineItemContainer.children.length ) {
+        let tableRows = lineItemContainer.children
+        for (let i = 0; i < tableRows.length; i++) {
+            console.log(tableRows[i].children[3].firstElementChild)
+            tableRows[i].children[3].firstElementChild.addEventListener('click', removeLineItem);
+        }
+    }
+}
+addFunctionality()
 
 addLineItem.addEventListener('click', e => {
     e.preventDefault();
@@ -41,6 +52,8 @@ addLineItem.addEventListener('click', e => {
     var removeElement = document.createElement("td");
     var removeButton = document.createElement("button")
     removeButton.innerText = "Remove"
+    console.log(removeButton)
+    removeButton.classList.add("btn", "btn-danger")
 
     productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
 
@@ -100,3 +113,6 @@ function checkSubmit(){
         submitButton.disabled = true
     }
 }
+
+
+

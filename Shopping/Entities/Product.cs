@@ -11,8 +11,8 @@ namespace Shopping.Entities
         public int Id { get; set; }
         [Required]
         public string ProductName { get; set; }
-        [Range(1, 1000)]
         public int UnitPrice { get; set; }
+        [Range(1, 10000)]
         public int QuantityAtHand { get; set; }
     }
 }
