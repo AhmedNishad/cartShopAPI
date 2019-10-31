@@ -38,7 +38,7 @@ namespace Shopping.Controllers
                 {
                     throw new Exception("Please Select a customer");
                 }
-                if(lineItems.Count < 1)
+                if (lineItems.Count < 1)
                 {
                     throw new Exception("Please add line items");
                 }
@@ -51,11 +51,11 @@ namespace Shopping.Controllers
                     item.Product = cartData.GetProductById(item.Product.Id);
                     item.Total = item.Product.UnitPrice * item.Quantity;
                 }
-                
+
                 date.AddHours(DateTime.Now.Hour);
                 var results = cartData.AddOrder(customerId, date, lineItems);
                 var last = new OrderLineItem();
-                if(results.Count == 0)
+                if (results.Count == 0)
                 {
                     throw new Exception($"There are inadequate products");
                 }
@@ -73,9 +73,9 @@ namespace Shopping.Controllers
                     model.Products = cartData.GetProducts();
                     return View(model);
                 }
-                
+
                 return RedirectToAction("ViewOrder", new { orderId = last.OrderId });
-            }catch(Exception e)
+            } catch (Exception e)
             {
                 return View("ErrorDisplay", new ErrorModel { Message = e.Message });
             }
@@ -84,6 +84,7 @@ namespace Shopping.Controllers
         public IActionResult ViewOrder(int orderId)
         {
             var model = new OrderViewModel();
+            // Aggregate all line Item Totals
             model.LineItems = cartData.GetLineItemsForOrder(orderId);
             model.Order = cartData.GetOrderById(orderId);
             model.Products = cartData.GetProducts();
@@ -95,7 +96,7 @@ namespace Shopping.Controllers
         public IActionResult ViewOrder(List<OrderLineItem> UpdatedItems)
         {
             int result = cartData.UpdateLineItems(UpdatedItems);
-            if(result == 0)
+            if (result == 0)
             {
                 return NotFound();
             }
@@ -108,7 +109,7 @@ namespace Shopping.Controllers
             orderLineItem.Product = cartData.GetProductById(productId);
             orderLineItem.Total = orderLineItem.Product.UnitPrice * orderLineItem.Quantity;
             int result = cartData.UpdateLineItem(lineId, orderLineItem);
-            if(result < 0)
+            if (result < 0)
             {
                 return View("ErrorDisplay", new ErrorModel { Message = $"There are inadequate products, you have requested {-1 * result} more than we capacity for {orderLineItem.Product.ProductName}" });
             }
@@ -121,6 +122,14 @@ namespace Shopping.Controllers
             model.Customers = cartData.GetCustomers();
             model.Orders = cartData.GetOrders();
             return View(model);
+        }
+
+        public IActionResult ViewOrdersForCustomer(int customerId)
+        {
+            var model = new OrdersViewModel();
+            model.Orders = cartData.GetOrdersForCustomer(customerId);
+            model.Customers = cartData.GetCustomers();
+            return View("ViewOrders",model);
         }
 
         public IActionResult ViewProducts()
@@ -149,7 +158,7 @@ namespace Shopping.Controllers
         public IActionResult AddProduct()
         {
             var model = new Product();
-            
+
             return View(model);
         }
 
@@ -162,6 +171,24 @@ namespace Shopping.Controllers
             }
             int result = cartData.AddProduct(product);
             return RedirectToAction("ViewProduct", new { productId = result });
+        }
+
+        [HttpGet]
+        public IActionResult AddCustomer()
+        {
+            var model = new Customer();
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult AddCustomer(Customer customer)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(customer);
+            }
+            cartData.AddCustomer(customer);
+            return RedirectToAction("Index");
         }
     }
 }

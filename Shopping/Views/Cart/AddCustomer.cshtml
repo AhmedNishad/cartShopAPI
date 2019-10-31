@@ -1,0 +1,20 @@
+﻿@model Shopping.Entities.Customer
+@{
+    ViewData["Title"] = "Add Customer";
+}
+
+<a asp-action="Index">Back</a>
+
+<h1>Add Customer</h1>
+
+<form class="form-group" action="" method="post">
+    <div class="form-control">
+        <lable asp-for="@Model.Name">Customer Name</lable>
+        <input type="text" asp-for="@Model.Name" />
+        <span class="text-danger" asp-validation-for="@Model.Name"></span>
+    </div>
+    
+    <div class="form-control">
+        <input class="btn btn-primary" type="submit" />
+    </div>
+</form>

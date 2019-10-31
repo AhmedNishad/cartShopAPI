@@ -21,6 +21,16 @@ namespace Shopping.Services
 
         public List<OrderLineItem> AddOrder(int CustomerId, DateTime date, List<OrderLineItem> orderLineItems)
         {
+            // Check if Order Present for same customer on same date
+            bool orderExists = false;
+            var existingOrder = new Order();
+            if(GetOrders().Exists(o=> ((o.Customer.Id == CustomerId) && (o.Date.ToShortDateString() == date.ToShortDateString()))))
+            {
+                 orderExists = true;
+                 existingOrder = db.Orders.Include(o=> o.LineItems).ThenInclude(l=>l.Product).FirstOrDefault(o => ((o.Date.ToShortDateString() == date.ToShortDateString()) && (o.Customer.Id == CustomerId)));
+            }
+
+
             var loopThroughItems = new List<OrderLineItem>();
             foreach(var item in orderLineItems)
             {
@@ -50,17 +60,38 @@ namespace Shopping.Services
             {
                 return new List<OrderLineItem>();
             }
-            db.Orders.Add(order);
-            foreach (var item in orderLineItems) 
+            int associatedOrderId = 0;
+            if (!orderExists)
             {
-                item.OrderId = order.Id;
-                item.Order = order;
-                
-                db.OrderLineItems.Add(item);
+                db.Orders.Add(order);
                 db.SaveChanges();
+
+                associatedOrderId = order.Id;
+                foreach (var item in orderLineItems)
+                {
+                    item.OrderId = associatedOrderId;
+                    item.Order = order;
+
+                    db.OrderLineItems.Add(item);
+                    db.SaveChanges();
+                }
             }
-            db.SaveChanges();
-            badItems.Add(new OrderLineItem() { OrderId = order.Id });
+            else
+            {
+                // Total to be managed
+                associatedOrderId = existingOrder.Id;
+                foreach (var item in orderLineItems) 
+                {
+                    item.OrderId = associatedOrderId;
+                    item.Order = existingOrder;
+                
+                    db.OrderLineItems.Add(item);
+                    db.SaveChanges();
+                }
+                existingOrder.Total = existingOrder.LineItems.Sum(o => o.Total);
+                UpdateOrder(existingOrder);
+            }
+            badItems.Add(new OrderLineItem() { OrderId = associatedOrderId });
             return badItems;
         }
 
@@ -144,9 +175,34 @@ namespace Shopping.Services
             // Update Product Quantity
             var updatedOrder = db.Orders.FirstOrDefault(o => o.Id == item.OrderId);
             updatedOrder.Total = GetLineItemsForOrder(item.OrderId).Sum(l => l.Total);
-            db.Orders.Update(updatedOrder);
+            // Ensure that the same product orders are aggregated
+            UpdateOrder(updatedOrder);
             db.SaveChanges();
             return item.OrderId;
+        }
+
+        private void UpdateOrder(Order updatedOrder)
+        {
+            var orderItems = updatedOrder.LineItems;
+            var existingLineItems = new List<OrderLineItem>();
+            for (int i = 0; i < orderItems.Count; i++)
+            {
+                var item = orderItems[i];
+                if(existingLineItems.Exists(l => l.Product.Id == item.Product.Id))
+                {
+                    var existingItem = existingLineItems.FirstOrDefault(l => l.Product.Id == item.Product.Id);
+                    existingItem.Quantity += item.Quantity;
+                    existingItem.Total += item.Total;
+                    orderItems.Remove(item);
+                }
+                else
+                {
+                    existingLineItems.Add(item);
+                }
+            }
+            updatedOrder.LineItems = existingLineItems;
+            db.Orders.Update(updatedOrder);
+            db.SaveChanges();
         }
 
         public List<Customer> GetCustomers()
@@ -175,6 +231,11 @@ namespace Shopping.Services
             return db.Orders.Include(o => o.Customer).Include(o=>o.LineItems).FirstOrDefault(o => o.Id == OrderId);
         }
 
+        public List<Order> GetOrdersForCustomer(int customerId)
+        {
+            return db.Orders.Where(o => o.Customer.Id == customerId).ToList();
+        }
+
         public Customer GetCustomerById(int CustomerId)
         {
             return db.Customers.FirstOrDefault(c => c.Id == CustomerId);
@@ -184,7 +245,12 @@ namespace Shopping.Services
         {
             return db.Products.ToList();
         }
-        
-        
+
+        public int AddCustomer(Customer customer)
+        {
+            db.Customers.Add(customer);
+            db.SaveChanges();
+            return customer.Id;
+        }
     }
 }

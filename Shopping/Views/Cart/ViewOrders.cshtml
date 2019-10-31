@@ -3,7 +3,27 @@
     ViewData["Title"] = "ViewOrders";
 }
 
+<a asp-action="Index">Back</a>
+
 <h1>ViewOrders</h1>
+
+<h2>Select Customer</h2>
+<form asp-action="ViewOrdersForCustomer" method="get">
+    <label for="customerId">Customer</label>
+
+    <select name="customerId">
+        @foreach (var customer in Model.Customers)
+        {
+            <option value="@customer.Id">@customer.Name</option>
+        }
+    </select>
+    <input type="submit" class="btn btn-success" value="Show" />
+</form>
+
+@if(Model.Orders.Count == 0)
+{
+    <h3>No Orders have been made by this Customer.</h3>
+}
 
 @foreach (var order in Model.Orders)
 {

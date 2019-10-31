@@ -4,21 +4,25 @@
 }
 
 <h1>Add Order</h1>
-<a asp-action="ViewOrders">Show Orders</a>
-<a asp-action="ViewProducts">Show Products</a>
-<form action="" method="post">
-    <label asp-for="@Model.AssociatedCustomer">Customer</label>
+<a class="btn btn-link" asp-action="ViewOrders">Show Orders</a>
+<a class="btn btn-link" asp-action="ViewProducts">Show Products</a>
+<a class="btn btn-link" asp-action="AddCustomer">Add Customer</a>
 
+<form class="form-group" action="" method="post">
+    <div class="form-control">
+        <label asp-for="@Model.AssociatedCustomer">Customer</label>
 
-    
-    <select name="customerId">
-        @foreach (var customer in Model.Customers)
-        {
-            <option value="@customer.Id">@customer.Name</option>
-        }
-    </select>
-    <label for="data">Date</label>
-    <input name="date" id="date-picker" type="date" />
+        <select name="customerId">
+            @foreach (var customer in Model.Customers)
+            {
+                <option value="@customer.Id">@customer.Name</option>
+            }
+        </select>
+    </div>
+    <div class="form-control">
+        <label for="data">Date</label>
+        <input name="date" id="date-picker" type="date" />
+    </div>
 
     <table class="table">
         <tr>
@@ -34,7 +38,7 @@
                 {
                     <tr>
                         <td><input type="hidden" value="@Model.LineItems[i].Product.Id" name="[@i].product.id" /> @Model.LineItems[i].Product.ProductName</td>
-                        <td><input type="hidden" value="@Model.LineItems[i].Quantity" name="[@i].quantity" />@Model.LineItems[i].Quantity</td>
+                        <td><input type="number" max="@Model.LineItems[i].Quantity" value="@Model.LineItems[i].Quantity" name="[@i].quantity" /></td>
                         <td><input type="hidden" value="@Model.LineItems[i].Total" name="[@i].total" /> @Model.LineItems[i].Total</td>
                         <td><button class="btn btn-danger">Remove</button></td>
                     </tr>

@@ -38,40 +38,68 @@ addLineItem.addEventListener('click', e => {
     var lineItemElement = document.createElement("tr");
     var productIdElement = document.createElement("td");
     productIdElement.innerHTML = `<input type='hidden' value='${productPicker.value}' name='[${idCounter}].product.id' /> 
-                                    ${productPicker.options[productPicker.selectedIndex].getAttribute('data-product-name')}`
+                                 <h6>${productPicker.options[productPicker.selectedIndex].getAttribute('data-product-name')}</h6>`
 
     var quantityElement = document.createElement("td");
     quantityElement.innerHTML = `<input type="hidden" value="${parseInt(quantityInput.value)}" name="[${idCounter}].quantity" /> 
-                                ${quantityInput.value}`
+                                <h6>${quantityInput.value}</h6>`
 
     var totalElement = document.createElement("td");
 
     var lineTotal = (parseInt(productPicker.options[productPicker.selectedIndex].getAttribute('data-unit-price')) * parseInt(quantityInput.value));
 
-    totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <h6>${lineTotal}</h6>`
-    var removeElement = document.createElement("td");
-    var removeButton = document.createElement("button")
-    removeButton.innerText = "Remove"
-    console.log(removeButton)
-    removeButton.classList.add("btn", "btn-danger")
+    let itemAlreadyExists = checkIfPreviouslySubmitted(productPicker.value, quantityInput.value, lineTotal)
 
-    productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
+    if (!itemAlreadyExists) {
+        totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <h6>${lineTotal}</h6>`
+        var removeElement = document.createElement("td");
+        var removeButton = document.createElement("button")
+        removeButton.innerText = "Remove"
+        console.log(removeButton)
+        removeButton.classList.add("btn", "btn-danger")
 
-    removeButton.addEventListener('click', removeLineItem)
-    removeElement.appendChild(removeButton)
+        // Update Product quantity for element. Now obsolete because we're overriding updated elements
+      //  productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
 
-    lineItemElement.appendChild(productIdElement);
-    lineItemElement.appendChild(quantityElement);
-    lineItemElement.appendChild(totalElement);
-    lineItemElement.appendChild(removeElement);
-    lineItemContainer.appendChild(lineItemElement);
-    idCounter++
-    addIdCounter()
-    updateTotal()
-    checkSubmit()
-    quantityInput.value = ""
-    addLineItem.disabled = true
+        removeButton.addEventListener('click', removeLineItem)
+        removeElement.appendChild(removeButton)
+
+        lineItemElement.appendChild(productIdElement);
+        lineItemElement.appendChild(quantityElement);
+        lineItemElement.appendChild(totalElement);
+        lineItemElement.appendChild(removeElement);
+        lineItemContainer.appendChild(lineItemElement);
+        idCounter++
+        addIdCounter()
+        updateTotal()
+        checkSubmit()
+        quantityInput.value = ""
+        addLineItem.disabled = true
+    }
 })
+
+function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
+    for (var i = 0; i < lineItemContainer.children.length; i++) {
+        var hiddenProductInput = lineItemContainer.children[i].firstElementChild.firstElementChild
+       // var productName =
+        var productQuantityHiddenInput = lineItemContainer.children[i].children[1].firstElementChild
+        var productQuantity = lineItemContainer.children[i].children[1].children[1]
+        var lineTotalHiddenInput = lineItemContainer.children[i].children[2].firstElementChild
+        var totalOfLine = lineItemContainer.children[i].children[2].children[1]
+        if (hiddenProductInput.value == productId) {
+            //  hiddenInput.
+            productQuantityHiddenInput.value = quantity
+            productQuantity.innerText = quantity
+            lineTotalHiddenInput.value = lineTotal
+            totalOfLine.innerText = lineTotal;
+            updateTotal()
+            quantityInput.value = ""
+            console.log("Exists")
+            return true
+        }
+    }
+    return false;
+}
 
 function updateTotal() {
     var total = 0;

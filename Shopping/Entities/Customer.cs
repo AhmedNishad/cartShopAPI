@@ -10,6 +10,8 @@ namespace Shopping.Entities
     {
         public int Id { get; set; }
         [Required]
+        [MaxLength(50)]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage ="Please enter valid name")]
         public string Name { get; set; }
     }
 }
