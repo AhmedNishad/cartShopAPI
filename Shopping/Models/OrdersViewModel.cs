@@ -10,5 +10,6 @@ namespace Shopping.Models
     {
         public List<Order> Orders{ get; set; }
         public List<Customer> Customers { get; set; }
+        public string SelectedCustomerName { get; set; }
     }
 }

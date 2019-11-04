@@ -1,23 +1,32 @@
 ﻿@model Shopping.Models.OrdersViewModel
 @{
-    ViewData["Title"] = "ViewOrders";
+    ViewData["Title"] = "All Orders";
 }
 
-<a asp-action="Index">Back</a>
 
-<h1>ViewOrders</h1>
+<a class="btn btn-link" asp-action="Index">Back</a>
 
-<h2>Select Customer</h2>
+<h1>Orders</h1>
 <form asp-action="ViewOrdersForCustomer" method="get">
-    <label for="customerId">Customer</label>
-
-    <select name="customerId">
-        @foreach (var customer in Model.Customers)
-        {
-            <option value="@customer.Id">@customer.Name</option>
-        }
-    </select>
-    <input type="submit" class="btn btn-success" value="Show" />
+    <div class="row">
+        <div class="col-5 offset-3">
+            <h5>For Customer @Model.SelectedCustomerName</h5>
+            <div class="autocomplete">
+                <select hidden name="customerId">
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <option value="@customer.Id">@customer.Name</option>
+                    }
+                </select>
+                <input class="form-control autocomplete-text" type="text" />
+                <select hidden class="autocomplete-dropdown form-control">
+                    <option value="0">Select Customer</option>
+                </select>
+            </div>
+            <input type="submit" class="btn btn-success" value="Search" />
+            <a class="btn btn-primary" asp-action="ViewOrders">All</a>
+        </div>
+    </div>
 </form>
 
 @if(Model.Orders.Count == 0)
@@ -25,12 +34,35 @@
     <h3>No Orders have been made by this Customer.</h3>
 }
 
-@foreach (var order in Model.Orders)
-{
-    <h3>@order.Customer.Name </h3>
-    <h4>@order.Total</h4>
-    <h4>@order.Date.ToShortDateString()</h4>
-    <a asp-action="ViewOrder" asp-route-orderId="@order.Id">Edit</a>
-    <hr/>
-}
-
+<div class="row">
+<div class="col-md-10 offset-1">
+<table class="table">
+    <thead>
+        <tr>
+            <td>Customer</td>
+            <td>Amount</td>
+            <td>Date</td>
+            <td>Actions</td>
+        </tr>
+    </thead>
+    @foreach (var order in Model.Orders)
+    {
+        <tr>
+            <td>
+                <h3>@order.Customer.Name </h3>
+            </td>
+            <td>
+                <h4> $@order.Total</h4>
+            </td>
+            <td>
+                <h5>@order.Date.ToShortDateString()</h5>
+            </td>
+            <td>
+                <a asp-action="ViewOrder" class="btn btn-secondary" asp-route-orderId="@order.Id">Edit</a>
+                <a asp-action="DeleteOrder" class="btn btn-warning" asp-route-orderId="@order.Id">Delete</a>
+            </td>
+        </tr>
+    }
+</table>
+</div>
+</div>

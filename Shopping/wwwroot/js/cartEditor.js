@@ -1,7 +1,10 @@
 ﻿var datePicker = document.getElementById("date-picker");
 var date = new Date();
-datePicker.value = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+var day = date.getDate().toString().length > 1 ? date.getDate() : "0" + date.getDate().toString()
+var month = date.getMonth().toString().length > 1 ? date.getMonth() : "0" + date.getMonth().toString()
+datePicker.value = `${date.getFullYear()}-${date.getMonth() + 1}-${day}`;
 var productPicker = document.getElementById("product-picker");
+var productInput = document.getElementById("product-input")
 var quantityInput = document.getElementById("quantity-input");
 var quantityOutput = document.getElementById("quantity-output");
 var addLineItem = document.getElementById("add-line-item");
@@ -9,6 +12,7 @@ var lineItemContainer = document.getElementById("line-item-container");
 var totalOutput = document.getElementById("total-output");
 var idCounter = 0;
 var submitButton = document.getElementById("submit-button");
+var customerInput = document.getElementById("customer-input");
 
 submitButton.disabled = true;
 
@@ -19,6 +23,13 @@ quantityInput.addEventListener('input', (e) => {
         addLineItem.disabled = true
     } else {
         addLineItem.disabled = false
+    }
+})
+
+customerInput.addEventListener('input', (e) => {
+    if (customerInput.value == "") {
+        submitButton.disabled = true;
+
     }
 })
 
@@ -74,6 +85,7 @@ addLineItem.addEventListener('click', e => {
         updateTotal()
         checkSubmit()
         quantityInput.value = ""
+        productInput.value = ""
         addLineItem.disabled = true
     }
 })
@@ -141,6 +153,8 @@ function checkSubmit(){
         submitButton.disabled = true
     }
 }
+
+
 
 
 

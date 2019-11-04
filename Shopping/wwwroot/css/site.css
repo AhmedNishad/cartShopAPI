@@ -54,3 +54,33 @@ body {
   height: 60px;
   line-height: 60px; /* Vertically center the text there */
 }
+
+.nav_username{
+    color: #16f8ff;
+}
+
+.site_nav ul{
+    margin-left: 30%;
+}
+
+.site_nav_image{
+    width: 40px;
+    height:45px;
+}
+
+.autocomplete-not-found::placeholder{
+    color: darkred;
+
+}
+
+.autocomplete-found::placeholder {
+    color: darkgreen;
+}
+
+.site-title{
+    height:55vh;
+}
+
+.site-title{
+    padding-top: 15%;
+}

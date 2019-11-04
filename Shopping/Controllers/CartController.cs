@@ -11,6 +11,7 @@ using Shopping.Services;
 
 namespace Shopping.Controllers
 {
+    [Authorize]
     public class CartController : Controller
     {
         private readonly ICartData cartData;
@@ -92,16 +93,16 @@ namespace Shopping.Controllers
         }
 
         // Unimplimented
-        [HttpPost]
-        public IActionResult ViewOrder(List<OrderLineItem> UpdatedItems)
-        {
-            int result = cartData.UpdateLineItems(UpdatedItems);
-            if (result == 0)
-            {
-                return NotFound();
-            }
-            return RedirectToAction("ViewOrder", new { orderId = result });
-        }
+        //[HttpPost]
+        //public IActionResult ViewOrder(List<OrderLineItem> UpdatedItems)
+        //{
+        //    int result = cartData.UpdateLineItems(UpdatedItems);
+        //    if (result == 0)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return RedirectToAction("ViewOrder", new { orderId = result });
+        //}
 
         [HttpPost]
         public IActionResult UpdateLineItem(int lineId, OrderLineItem orderLineItem, int productId)
@@ -127,9 +128,10 @@ namespace Shopping.Controllers
         public IActionResult ViewOrdersForCustomer(int customerId)
         {
             var model = new OrdersViewModel();
+            model.SelectedCustomerName = cartData.GetCustomerById(customerId).Name;
             model.Orders = cartData.GetOrdersForCustomer(customerId);
             model.Customers = cartData.GetCustomers();
-            return View("ViewOrders",model);
+            return View("ViewOrders", model);
         }
 
         public IActionResult ViewProducts()
@@ -148,9 +150,14 @@ namespace Shopping.Controllers
         }
 
         [HttpPost]
-        public IActionResult ViewProduct(int productId, int newQuantity)
+        public IActionResult ViewProduct(Product product)
         {
-            int result = cartData.QuantityUpdateForProduct(productId, newQuantity);
+            if (!ModelState.IsValid)
+            {
+                product.QuantityAtHand = 0;
+                return View(product);
+            }
+            int result = cartData.QuantityUpdateForProduct(product.Id, product.QuantityAtHand);
             return RedirectToAction("ViewProduct", new { productId = result });
         }
 
@@ -183,12 +190,60 @@ namespace Shopping.Controllers
         [HttpPost]
         public IActionResult AddCustomer(Customer customer)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(customer);
+                if (!ModelState.IsValid)
+                {
+                    return View(customer);
+                }
+                int result = cartData.AddCustomer(customer);
+                if (result == 0)
+                {
+                    throw new Exception("Customer already exists");
+                }
+                return RedirectToAction("Index");
+            } catch (Exception e)
+            {
+                var error = new ErrorModel();
+                error.Message = e.Message;
+                return View("ErrorDisplay", error);
             }
-            cartData.AddCustomer(customer);
-            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult DeleteLineItemById(int lineId, int orderID)
+        {
+            int result = cartData.deleteLineItemById(lineId);
+            if (result == 0)
+            {
+                return RedirectToAction("ShowOrders");
+            }
+            return RedirectToAction("ViewOrder", new { orderId = orderID });
+        }
+
+        [HttpGet]
+        public IActionResult DeleteOrder(int orderID)
+        {
+            return RedirectToAction("ConfirmDeleteOrder", new { orderId = orderID });
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmDeleteOrder(int orderId)
+        {
+            var model = new Order();
+            model.Id = orderId;
+            return View(model);
+        }
+        [HttpPost]
+        public IActionResult ConfirmDeleteOrder(Order order)
+        {
+            int result = cartData.DeleteOrder(order.Id);
+            if (result == 0)
+            {
+                return RedirectToAction("Index");
+            }
+            return RedirectToAction("ViewOrders");
+            
         }
     }
 }

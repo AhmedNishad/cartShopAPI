@@ -3,15 +3,24 @@
     ViewData["Title"] = "ViewProducts";
 }
 
-<a asp-action="Index">Back</a>
+<a class="btn btn-link" asp-action="Index">Back</a>
 
-<h1>List of Products</h1>
+<h1>All Products</h1>
 <a class="btn btn-secondary" asp-action="AddProduct">Add New</a>
 
-@foreach(var product in Model.Products)
-{
-    <h2>@product.ProductName</h2>
-    <h3>@product.QuantityAtHand</h3>
-    <a asp-action="ViewProduct" asp-route-productId="@product.Id">View Product</a>
-    <hr />
-}
+<div class="row">
+    @foreach (var product in Model.Products)
+    {
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-title bg-dark">
+                <h4 class="text-center text-uppercase text-light">@product.ProductName</h4>
+            </div>
+            <div class="card-body text-secondary">
+                <h3>@product.QuantityAtHand Remaining</h3>
+                <a asp-action="ViewProduct" class="btn btn-light" asp-route-productId="@product.Id">View Product</a>
+            </div>
+        </div>
+    </div>
+    }
+</div>

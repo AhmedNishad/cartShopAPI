@@ -1,13 +1,13 @@
 ﻿@model Shopping.Models.OrderViewModel
 @{
-    ViewData["Title"] = "ViewOrder";
+    ViewData["Title"] = "View Order";
 }
 
-<a asp-action="ViewOrders">Show All</a>
-<h1>ViewOrder - @Model.Order.Customer.Name</h1>
-<h3>@Model.Order.Date.ToShortDateString()</h3>
+<a asp-action="ViewOrdersForCustomer" asp-route-customerId="@Model.Order.Customer.Id">Show All</a>
+<h1>Customer - @Model.Order.Customer.Name</h1>
+<h3>Date - @Model.Order.Date.ToShortDateString()</h3>
 
-
+<a class="btn btn-warning text-right" asp-action="DeleteOrder" asp-route-id="@Model.Order.Id">Delete</a>
 
 <form action="" method="post">
     <table class="table">
@@ -16,20 +16,27 @@
                 <th>Product Name</th>
                 <th>Quantity</th>
                 <th>Total</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             <tr id="editing-form-field">
                 <td>
-                    <select id="product-picker" name="productId">
-                        @foreach (var product in Model.Products)
-                        {
-                            <option data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
-                                    value="@product.Id">
-                                @product.ProductName
-                            </option>
-                        }
-                    </select>
+                    <div class="autocomplete">
+                        <select hidden id="product-picker" name="productId">
+                            @foreach (var product in Model.Products)
+                            {
+                                <option data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                                        value="@product.Id">
+                                    @product.ProductName
+                                </option>
+                            }
+                        </select>
+                        <input class="form-control autocomplete-text" type="text" />
+                        <select hidden class="autocomplete-dropdown form-control">
+                            <option value="0">Select Product</option>
+                        </select>
+                    </div>
                 </td>
                 <td><input id="quantity-input" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
                 <td><button class="btn btn-info" id="edit-line-item" asp-action="UpdateLineItem">Edit</button></td>
@@ -40,22 +47,29 @@
                     <td>@item.Product.ProductName</td>
                     <td>@item.Quantity</td>
                     <td>@item.Total</td>
-                    <td></td>
+                    <td>
+                        @*<form method="post" asp-action="DeleteLineItemById">
+                                <input hidden name="lineId" value="@item.Id" />
+                                <input hidden name="orderID" value="@item.OrderId" />
+                                <input type="submit" class="btn btn-danger" value="Delete"/>
+                            </form>*@
+                        <a class="btn btn-danger" asp-action="DeleteLineItemById" asp-route-lineId="@item.Id" asp-route-orderID="@item.Order.Id">Delete</a>
+                    </td>
                 </tr>
 
             }
 
         </tbody>
-                    <tfoot>
-                        <tr>
-                            <td><h4>Total</h4></td>
-                            <td></td>
-                            <td><h4>@Model.Order.Total</h4></td>
-                        </tr>
-                    </tfoot>
-                </table>
+        <tfoot>
+            <tr>
+                <td><h4>Grand Total </h4></td>
+                <td></td>
+                <td><h4>@Model.Order.Total</h4></td>
+            </tr>
+        </tfoot>
+    </table>
 
 
-            </form>
+</form>
 
-            <script src="~/js/editOrder.js"></script>
+<script src="~/js/editOrder.js"></script>

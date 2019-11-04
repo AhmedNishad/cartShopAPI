@@ -3,25 +3,41 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Add Order</h1>
-<a class="btn btn-link" asp-action="ViewOrders">Show Orders</a>
-<a class="btn btn-link" asp-action="ViewProducts">Show Products</a>
-<a class="btn btn-link" asp-action="AddCustomer">Add Customer</a>
-
-<form class="form-group" action="" method="post">
-    <div class="form-control">
-        <label asp-for="@Model.AssociatedCustomer">Customer</label>
-
-        <select name="customerId">
-            @foreach (var customer in Model.Customers)
-            {
-                <option value="@customer.Id">@customer.Name</option>
-            }
-        </select>
+    <div class="row">
+        <div class="col-5 offset-3">
+            <div class="row">
+                <a class="col-4 btn btn-light" asp-action="ViewOrders">Orders</a>
+                <a class="col-4 btn btn-light" asp-action="ViewProducts">Products</a>
+                <a class="col-4 btn btn-light" asp-action="AddCustomer">Customer</a>
+            </div>
+        </div>
     </div>
-    <div class="form-control">
-        <label for="data">Date</label>
-        <input name="date" id="date-picker" type="date" />
+
+<h1>Add Order</h1>
+
+
+<form  action="" method="post" autocomplete="off">
+    <div class="row">
+        <div class="form-group col-md-6">
+            <label class="form-control" asp-for="@Model.AssociatedCustomer">Customer</label>
+
+            <div class="autocomplete">
+                <select hidden name="customerId">
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <option value="@customer.Id">@customer.Name</option>
+                    }
+                </select>
+                <input id="customer-input" class="form-control autocomplete-text" type="text" />
+                <select hidden class="autocomplete-dropdown form-control">
+                    <option disabled value="0">Select Customer</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <label class="form-control" for="data">Date</label>
+            <input class="form-control" name="date" id="date-picker" type="date" />
+        </div>
     </div>
 
     <table class="table">
@@ -59,26 +75,39 @@
         </tbody>
         <tr>
             <td>
-
-                <select class="dropdown" id="product-picker" name="productId">
-                    @foreach (var product in Model.Products)
-                    {
-                        <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
-                                value="@product.Id">
-                            @product.ProductName
-                        </option>
-                    }
-                </select>
+                <div class="autocomplete" >
+                    <select hidden class="dropdown" id="product-picker" name="productId">
+                        @foreach (var product in Model.Products)
+                        {
+                            <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                                    value="@product.Id">
+                                @product.ProductName
+                            </option>
+                        }
+                    </select>
+                    <input id="product-input" class="form-control autocomplete-text" type="text" />
+                    <select hidden class="autocomplete-dropdown form-control">
+                        <option disabled value="0">Select Product</option>
+                    </select>
+                </div>
             </td>
-            <td><input min="1" id="quantity-input" type="number" name="quantity" /></td>
+            <td><div class="form-group row"><input class="form-control col-md-8" min="1" id="quantity-input" type="number" name="quantity" /></div></td>
             <td><h4 id="quantity-output"></h4></td>
             <td><button id="add-line-item" class="btn btn-dark">Add</button></td>
         </tr>
     </table>
 
-    <h2>Grand Total : <span id="total-output"></span></h2>
+    <h2 class="text-right">Grand Total  $<span id="total-output">0</span></h2>
 
-    <input class="btn btn-success" id="submit-button" type="submit" />
+    <div class="row">
+        <div class="col-4 offset-5">
+            <div class="input-group">
+                <input class="btn btn-success input-group-btn" id="submit-button" value="Save" type="submit" />
+
+            </div>
+
+        </div>
+    </div>
 </form>
 
 <script src="~/js/cartEditor.js"></script>

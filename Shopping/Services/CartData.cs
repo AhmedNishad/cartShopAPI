@@ -17,7 +17,7 @@ namespace Shopping.Services
             this.db = db;
         }
 
-        
+        // --- Create Methods ---
 
         public List<OrderLineItem> AddOrder(int CustomerId, DateTime date, List<OrderLineItem> orderLineItems)
         {
@@ -97,29 +97,45 @@ namespace Shopping.Services
 
         public int AddProduct(Product product)
         {
+            if(db.Products.ToList().Exists(p => p.ProductName.ToLower() == product.ProductName.ToLower()))
+            {
+                return db.Products.FirstOrDefault(p => p.ProductName.ToLower() == product.ProductName.ToLower()).Id;
+            }
             db.Products.Add(product);
             db.SaveChanges();
             return product.Id;
         }
 
-        // Unused
-        public void CreateLineItemsForOrder(List<OrderLineItem> lineItems)
+        public int AddCustomer(Customer customer)
         {
-            foreach(var item in lineItems)
+            if (db.Customers.ToList().Exists(c => c.Name.ToLower() == customer.Name.ToLower()))
             {
-                try
-                {
-                    item.Product = GetProductById(item.Product.Id);
-                }catch(Exception e)
-                {
-                    throw new Exception ("Product Not Found");
-                }
-                item.Total = item.Product.UnitPrice * item.Quantity;
-                db.OrderLineItems.Add(item);
+                return 0;
             }
+            db.Customers.Add(customer);
             db.SaveChanges();
+            return customer.Id;
         }
 
+        // Unused
+        //public void CreateLineItemsForOrder(List<OrderLineItem> lineItems)
+        //{
+        //    foreach(var item in lineItems)
+        //    {
+        //        try
+        //        {
+        //            item.Product = GetProductById(item.Product.Id);
+        //        }catch(Exception e)
+        //        {
+        //            throw new Exception ("Product Not Found");
+        //        }
+        //        item.Total = item.Product.UnitPrice * item.Quantity;
+        //        db.OrderLineItems.Add(item);
+        //    }
+        //    db.SaveChanges();
+        //}
+
+        // --- Update Methods ---
 
         public int UpdateLineItems(List<OrderLineItem> lineItems)
         {
@@ -205,10 +221,14 @@ namespace Shopping.Services
             db.SaveChanges();
         }
 
+        // --- Update Methods ---
+
         public List<Customer> GetCustomers()
         { 
-            return db.Customers.ToList();
+            return db.Customers.OrderBy(c=> c.Name).ToList();
         }
+
+        
 
         public Product GetProductById(int id)
         {
@@ -233,7 +253,7 @@ namespace Shopping.Services
 
         public List<Order> GetOrdersForCustomer(int customerId)
         {
-            return db.Orders.Where(o => o.Customer.Id == customerId).ToList();
+            return db.Orders.OrderByDescending(o=> o.Date).Where(o => o.Customer.Id == customerId).ToList();
         }
 
         public Customer GetCustomerById(int CustomerId)
@@ -243,14 +263,50 @@ namespace Shopping.Services
 
         public List<Product> GetProducts()
         {
-            return db.Products.ToList();
+            return db.Products.OrderBy(p=> p.ProductName).ToList();
         }
 
-        public int AddCustomer(Customer customer)
+        // --- Delete Methods
+
+        public int deleteLineItemById(int lineId)
         {
-            db.Customers.Add(customer);
+            var item = db.OrderLineItems.Include(l=> l.Product).Include(l=> l.Order).FirstOrDefault(l => l.Id == lineId);
+            
+            var order = item.Order;
+            order.LineItems = db.OrderLineItems.Include(l => l.Product).Where(l => l.OrderId == order.Id).ToList();
+            if(order.LineItems.Count == 1)
+            {
+                return 0;
+            }
+            if(item == null)
+            {
+                return 0;
+            }
+            QuantityUpdateForProduct(item.Product.Id, item.Product.QuantityAtHand + item.Quantity);
+            order.LineItems.Remove(item);
+            order.Total = item.Order.LineItems.Sum(l => l.Total);
             db.SaveChanges();
-            return customer.Id;
+            UpdateOrder(order);
+            return 1;
         }
+
+        public int DeleteOrder(int orderId)
+        {
+            var deleteingOrder = db.Orders.FirstOrDefault(o => o.Id == orderId);
+            if(deleteingOrder == null)
+            {
+                return 0;
+            }
+            foreach(var lineItem in deleteingOrder.LineItems)
+            {
+                int updatedQuantity = lineItem.Product.QuantityAtHand + lineItem.Quantity;
+                QuantityUpdateForProduct(lineItem.Product.Id, updatedQuantity);
+            }
+            db.Orders.Remove(deleteingOrder);
+            db.SaveChanges();
+            return 1;
+        }
+
+        
     }
 }
