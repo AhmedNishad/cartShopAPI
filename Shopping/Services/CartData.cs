@@ -27,15 +27,18 @@ namespace Shopping.Services
             if(GetOrders().Exists(o=> ((o.Customer.Id == CustomerId) && (o.Date.ToShortDateString() == date.ToShortDateString()))))
             {
                  orderExists = true;
+                // If order exists get all existing line items
                  existingOrder = db.Orders.Include(o=> o.LineItems).ThenInclude(l=>l.Product).FirstOrDefault(o => ((o.Date.ToShortDateString() == date.ToShortDateString()) && (o.Customer.Id == CustomerId)));
             }
 
 
             var loopThroughItems = new List<OrderLineItem>();
+            // create copy of list to solve collection has changed error
             foreach(var item in orderLineItems)
             {
                 loopThroughItems.Add(item);
             }
+            // List to store all the line items who'se quantity is too high
             var badItems = new List<OrderLineItem>();
             int lengthOfLoop = orderLineItems.Count;
             var order = new Order();
@@ -97,6 +100,7 @@ namespace Shopping.Services
 
         public int AddProduct(Product product)
         {
+            // Check if product of same name exists
             if(db.Products.ToList().Exists(p => p.ProductName.ToLower() == product.ProductName.ToLower()))
             {
                 return db.Products.FirstOrDefault(p => p.ProductName.ToLower() == product.ProductName.ToLower()).Id;
@@ -108,6 +112,7 @@ namespace Shopping.Services
 
         public int AddCustomer(Customer customer)
         {
+            // Check if customer of same name exists
             if (db.Customers.ToList().Exists(c => c.Name.ToLower() == customer.Name.ToLower()))
             {
                 return 0;
@@ -117,7 +122,7 @@ namespace Shopping.Services
             return customer.Id;
         }
 
-        // Unused
+        // --- Unused
         //public void CreateLineItemsForOrder(List<OrderLineItem> lineItems)
         //{
         //    foreach(var item in lineItems)
@@ -154,6 +159,7 @@ namespace Shopping.Services
                 return 0;
             }
             int remaining = product.QuantityAtHand - toReduce;
+            // If there is less quantity than remaining, do not update
             if(remaining < 0)
             {
                 return remaining;
@@ -203,6 +209,7 @@ namespace Shopping.Services
             var existingLineItems = new List<OrderLineItem>();
             for (int i = 0; i < orderItems.Count; i++)
             {
+                // Collect all line items of the order together ( Append Quantities )
                 var item = orderItems[i];
                 if(existingLineItems.Exists(l => l.Product.Id == item.Product.Id))
                 {
@@ -274,6 +281,7 @@ namespace Shopping.Services
             
             var order = item.Order;
             order.LineItems = db.OrderLineItems.Include(l => l.Product).Where(l => l.OrderId == order.Id).ToList();
+            // If only one line item remains for order. Do not process
             if(order.LineItems.Count == 1)
             {
                 return 0;
@@ -292,11 +300,12 @@ namespace Shopping.Services
 
         public int DeleteOrder(int orderId)
         {
-            var deleteingOrder = db.Orders.FirstOrDefault(o => o.Id == orderId);
+            var deleteingOrder = db.Orders.Include(o=>o.LineItems).ThenInclude(l=>l.Product).FirstOrDefault(o => o.Id == orderId);
             if(deleteingOrder == null)
             {
                 return 0;
             }
+            // Update Product quantities
             foreach(var lineItem in deleteingOrder.LineItems)
             {
                 int updatedQuantity = lineItem.Product.QuantityAtHand + lineItem.Quantity;

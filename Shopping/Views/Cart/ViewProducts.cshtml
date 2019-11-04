@@ -14,10 +14,18 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-title bg-dark">
-                <h4 class="text-center text-uppercase text-light">@product.ProductName</h4>
+                <h4 class="text-center text-light">@product.ProductName</h4>
             </div>
             <div class="card-body text-secondary">
-                <h3>@product.QuantityAtHand Remaining</h3>
+                @if (product.QuantityAtHand < 10)
+                {
+                    <h3 class="text-danger">@product.QuantityAtHand Remaining</h3>
+
+                }
+                else
+                {
+                    <h3>@product.QuantityAtHand Remaining</h3>
+                }
                 <a asp-action="ViewProduct" class="btn btn-light" asp-route-productId="@product.Id">View Product</a>
             </div>
         </div>

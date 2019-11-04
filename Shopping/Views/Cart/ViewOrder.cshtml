@@ -7,7 +7,7 @@
 <h1>Customer - @Model.Order.Customer.Name</h1>
 <h3>Date - @Model.Order.Date.ToShortDateString()</h3>
 
-<a class="btn btn-warning text-right" asp-action="DeleteOrder" asp-route-id="@Model.Order.Id">Delete</a>
+<a class="btn btn-warning text-right" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">Delete</a>
 
 <form action="" method="post">
     <table class="table">
@@ -48,12 +48,10 @@
                     <td>@item.Quantity</td>
                     <td>@item.Total</td>
                     <td>
-                        @*<form method="post" asp-action="DeleteLineItemById">
-                                <input hidden name="lineId" value="@item.Id" />
-                                <input hidden name="orderID" value="@item.OrderId" />
-                                <input type="submit" class="btn btn-danger" value="Delete"/>
-                            </form>*@
-                        <a class="btn btn-danger" asp-action="DeleteLineItemById" asp-route-lineId="@item.Id" asp-route-orderID="@item.Order.Id">Delete</a>
+                        @if(Model.LineItems.Count > 1)
+                        {
+                            <a class="btn btn-danger" asp-action="DeleteLineItemById" asp-route-lineId="@item.Id" asp-route-orderID="@item.Order.Id">Delete</a>
+                        }
                     </td>
                 </tr>
 
