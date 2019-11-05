@@ -2,14 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shopping.Services;
+using Shopping.Business.Entities;
+using Shopping.Business.Services;
+using Shopping.Data;
+using Shopping.Data.Access;
+using Shopping.Entities;
 
 namespace Shopping
 {
@@ -18,13 +25,28 @@ namespace Shopping
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+           // productService = new ProductService();
+           // CustomerService = new CustomerService();
+            //MapperConfig = new MapperConfiguration(cfg => {
+            //    cfg.CreateMap<Product, ProductBO>().ReverseMap();
+            //    cfg.CreateMap<List<Product>, List<ProductBO>>().ReverseMap();
+            //    cfg.CreateMap<Customer, CustomerBO>().ReverseMap();
+            //    cfg.CreateMap<List<Customer>, List<CustomerBO>>().ReverseMap();
+            //    cfg.CreateMap<Order, OrderBO>().ReverseMap();
+            //    cfg.CreateMap<OrderLineItem, OrderLineItemBO>().ReverseMap();
+            //});
+            //Mapper = new Mapper(MapperConfig);
         }
-
+        public Mapper Mapper { get; set; }
         public IConfiguration Configuration { get; }
+        public MapperConfiguration MapperConfig { get; set; }
+        public ProductService productService { get; }
+        public CustomerService CustomerService { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -32,7 +54,23 @@ namespace Shopping
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddScoped<ICartData, CartData>();
+            services.AddAutoMapper(new MappingProfile().GetType().Assembly);
+
+            services.AddDbContext<ShoppingContext>(options =>
+                    options.UseSqlServer(
+                        Configuration.GetConnectionString("ShoppingContextConnection"), x => x.MigrationsAssembly("Shopping.Data")));
+
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddEntityFrameworkStores<ShoppingContext>();
+
+            services.AddTransient<OrderRepository>();
+            services.AddScoped<CustomerRepository>();
+            services.AddScoped<ProductRepository>();
+
+            services.AddTransient<ProductService>();
+            services.AddTransient<CustomerService>();
+            services.AddTransient<OrderService>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

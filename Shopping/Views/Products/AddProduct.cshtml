@@ -1,0 +1,33 @@
+﻿@model Shopping.Entities.Product
+@{
+    ViewData["Title"] = "AddProduct";
+}
+
+<div class="row">
+    <div class="col-5 offset-3">
+        <a asp-controller="Products" asp-action="ViewProducts">Back to Products</a>
+        <h1>Add Product</h1>
+
+
+        <form asp-controller="Products" asp-action="AddProduct" method="post">
+            <div class="form-group">
+                <lable class="form-control" asp-for="@Model.ProductName">Product Name</lable>
+                <input class="form-control" type="text" asp-for="@Model.ProductName" />
+                <span class="text-danger" asp-validation-for="@Model.ProductName"></span>
+            </div>
+            <div class="form-group">
+                <lable class="form-control" asp-for="@Model.UnitPrice">Unit Price</lable>
+                <input class="form-control" type="text" asp-for="@Model.UnitPrice" />
+                <span class="text-danger" asp-validation-for="@Model.UnitPrice"></span>
+            </div>
+            <div class="form-group">
+                <lable class="form-control" asp-for="@Model.QuantityAtHand">Quantity at Hand</lable>
+                <input class="form-control" type="text" asp-for="@Model.QuantityAtHand" />
+                <span class="text-danger" asp-validation-for="@Model.QuantityAtHand"></span>
+            </div>
+            <div class="row">
+                <input class="col-2 offset-5 align-self-center btn btn-primary" type="submit" />
+            </div>
+        </form>
+    </div>
+</div>
