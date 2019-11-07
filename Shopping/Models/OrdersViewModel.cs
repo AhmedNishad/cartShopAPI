@@ -11,5 +11,8 @@ namespace Shopping.Models
         public List<Order> Orders{ get; set; }
         public List<Customer> Customers { get; set; }
         public string SelectedCustomerName { get; set; }
+        public bool Next { get; set;}
+        public int PageNumber { get; set; }
+        public string SortBy { get; set; }
     }
 }

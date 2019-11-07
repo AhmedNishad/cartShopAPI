@@ -12,10 +12,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Shopping.Business;
 using Shopping.Business.Entities;
 using Shopping.Business.Services;
 using Shopping.Data;
 using Shopping.Data.Access;
+using Shopping.Data.Interfaces;
+
 using Shopping.Entities;
 
 namespace Shopping
@@ -63,13 +66,13 @@ namespace Shopping
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ShoppingContext>();
 
-            services.AddTransient<OrderRepository>();
-            services.AddScoped<CustomerRepository>();
-            services.AddScoped<ProductRepository>();
+            services.AddTransient<IProductService,ProductService>();
+            services.AddTransient<ICustomerService,CustomerService>();
+            services.AddTransient<IOrderService,OrderService>();
 
-            services.AddTransient<ProductService>();
-            services.AddTransient<CustomerService>();
-            services.AddTransient<OrderService>();
+            services.AddScoped<ICustomerRepository,CustomerRepository>();
+            services.AddScoped<IProductRepository,ProductRepository>();
+            services.AddScoped<IOrderRepository,OrderRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

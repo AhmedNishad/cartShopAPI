@@ -1,6 +1,7 @@
 ﻿@model Shopping.Models.OrderViewModel
 @{
     ViewData["Title"] = "View Order";
+    int lineIdCount = 0;
 }
 
 <a asp-action="ViewOrdersForCustomer" asp-route-customerId="@Model.Order.Customer.Id">Show All</a>
@@ -9,7 +10,7 @@
 
 <a class="btn btn-warning text-right" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">Delete</a>
 
-<form action="" method="post">
+<form action="" method="post" autocomplete="off">
     <table class="table">
         <thead>
             <tr>
@@ -22,52 +23,69 @@
         <tbody>
             <tr id="editing-form-field">
                 <td>
-                    <div class="autocomplete">
-                        <select hidden id="product-picker" name="productId">
-                            @foreach (var product in Model.Products)
-                            {
-                                <option data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
-                                        value="@product.Id">
-                                    @product.ProductName
-                                </option>
-                            }
-                        </select>
-                        <input class="form-control autocomplete-text" type="text" />
-                        <select hidden class="autocomplete-dropdown form-control">
-                            <option value="0">Select Product</option>
-                        </select>
-                    </div>
+                    <h6></h6>
                 </td>
-                <td><input id="quantity-input" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
+                <td><input id="quantity-input-edit" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
                 <td><button class="btn btn-info" id="edit-line-item" asp-action="UpdateLineItem">Edit</button></td>
             </tr>
+            <tbody id="line-item-container">
             @foreach (var item in Model.LineItems)
             {
-                <tr class="editable-item" data-line-item-id="@item.Id" data-product-price="@item.Product.UnitPrice" data-product-id="@item.Product.Id">
-                    <td>@item.Product.ProductName</td>
-                    <td>@item.Quantity</td>
-                    <td>@item.Total</td>
+                <tr class="editable-item" data-line-item-id="@item.Id" data-product-quantity="@item.Product.QuantityAtHand" data-product-name="@item.Product.ProductName" data-product-price="@item.Product.UnitPrice" data-product-id="@item.Product.Id">
+                    <td><input type="hidden" value="@item.Product.Id" name="[@lineIdCount].product.id" />@item.Product.ProductName</td>
+                    <td><input type="hidden" value="@item.Quantity" name="[@lineIdCount].quantity" />@item.Quantity</td>
+                    <td><input type="hidden" value="@item.Total" name="[@lineIdCount].total" />@item.Total</td>
                     <td>
-                        @if(Model.LineItems.Count > 1)
+                        @if (Model.LineItems.Count > 1)
                         {
-                            <a class="btn btn-danger" asp-action="DeleteLineItemById" asp-route-lineId="@item.Id" asp-route-orderID="@Model.Order.Id">Delete</a>
+                            <button class="btn btn-danger remove-button">Remove</button>
                         }
                     </td>
                 </tr>
 
             }
-
-        </tbody>
+            </tbody>
+            <tr>
+                <td>
+                    <div class="autocomplete">
+                        <select hidden class="dropdown" id="product-picker-new" name="productId">
+                            @foreach (var product in Model.Products)
+                            {
+                                <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                                        value="@product.Id">
+                                    @product.ProductName
+                                </option>
+                            }
+                        </select>
+                        <input id="product-input" class="form-control autocomplete-text" type="text" />
+                        <select id="product-select" hidden class="autocomplete-dropdown form-control">
+                            <option disabled value="0">Select Product</option>
+                        </select>
+                    </div>
+                </td>
+                <td><div class="form-group row"><input class="form-control col-md-8" min="1" id="quantity-input-new" type="number" name="quantity" /></div></td>
+                <td><h4 id="quantity-output"></h4></td>
+                <td><button id="add-line-item" class="btn btn-dark">Add</button></td>
+            </tr>
+        
         <tfoot>
             <tr>
                 <td><h4>Grand Total </h4></td>
                 <td></td>
-                <td><h4>@Model.Order.Total</h4></td>
+                <td><h4 id="total-output">@Model.Order.Total</h4></td>
             </tr>
         </tfoot>
     </table>
 
+    <div class="row">
+        <div class="col-4 offset-5">
+            <div class="input-group">
+                <input class="btn btn-success input-group-btn" id="submit-button" value="Save" type="submit" />
 
+            </div>
+
+        </div>
+    </div>
 </form>
 
 <script src="~/js/editOrder.js"></script>

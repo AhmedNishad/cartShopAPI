@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Shopping.Business;
 using Shopping.Business.Entities;
 using Shopping.Business.Services;
 using Shopping.Entities;
@@ -13,9 +14,9 @@ namespace Shopping.Controllers
 {
     public class CustomersController : Controller
     {
-        private CustomerService customerService { get; }
+        private ICustomerService customerService { get; }
         private IMapper mapper;
-        public CustomersController(CustomerService customerService, IMapper mapper)
+        public CustomersController(ICustomerService customerService, IMapper mapper)
         {
             this.mapper = mapper;
             this.customerService = customerService;

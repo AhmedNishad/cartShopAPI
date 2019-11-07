@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Shopping.Business;
 using Shopping.Business.Entities;
 using Shopping.Business.Services;
 using Shopping.Entities;
@@ -13,10 +14,10 @@ namespace Shopping.Controllers
 {
     public class ProductsController : Controller
     {
-        private ProductService productService { get; }
+        private IProductService productService { get; }
         public IMapper mapper { get; }
 
-        public ProductsController(ProductService productService, IMapper mapper)
+        public ProductsController(IProductService productService, IMapper mapper)
         {
             this.productService = productService;
             this.mapper = mapper;

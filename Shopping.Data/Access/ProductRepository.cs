@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Shopping.Data.Entities;
+using Shopping.Data.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace Shopping.Data.Access
 {
-    public class ProductRepository
+    public class ProductRepository : IProductRepository
     {
         private readonly ShoppingContext db;
 

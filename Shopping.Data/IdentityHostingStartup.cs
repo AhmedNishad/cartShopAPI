@@ -16,9 +16,9 @@ namespace Shopping.Data
         {
             builder.ConfigureServices((context, services) => {
 
-                services.AddDbContext<ShoppingContext>(options =>
-                    options.UseSqlServer(
-                        context.Configuration.GetConnectionString("ShoppingContextConnection")));
+                //services.AddDbContext<ShoppingContext>(options =>
+                //    options.UseSqlServer(
+                //        context.Configuration.GetConnectionString("ShoppingContextConnection")));
 
                 //services.AddDefaultIdentity<IdentityUser>()
                 //    .AddEntityFrameworkStores<ShoppingContext>();

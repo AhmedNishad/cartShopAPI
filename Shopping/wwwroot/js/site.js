@@ -38,9 +38,7 @@ function autoCompletionFunctionality() {
             }
             // Update Visible Field
             if (dropdown.children.length > 0) {
-                //for (var g = 0; g < dropdown.options.length-1; g++) {
-                //    dropdown.options.remove(1)
-                //}
+                
                 while (dropdown.options.length > 1) {
                     dropdown.options.remove(1)
                 }
@@ -52,27 +50,24 @@ function autoCompletionFunctionality() {
                 }
                 if (containingList.length == 1) {
                     // Assign placeholder to selected name and select the hidden elements value
-                    //e.target.parentElement.children[2]
                     dropdown.selectedIndex = 1
                     e.target.parentElement.children[0].value = dropdown.value
                     e.target.placeholder = containingList[0].innerText.trim()
                     e.target.className = " autocomplete-found"
-                    // console.log(e.target.parentElement.children[0].options[dropdown.selectedIndex])
                     e.target.parentElement.children[0].value = dropdown.value
                     e.target.value = ""
-                    // e.target.parentElement.children[0].selectedIndex = 
                 } else {
                     dropdown.selectedIndex = 1
                     e.target.parentElement.children[0].value = dropdown.value
 
                 }
                 
+                localHiddenSelect.value = dropdown.value 
             }
             containingList = []
         })
 
         droppingDownElement.addEventListener('change', (e) => {
-            
             e.target.parentElement.children[0].value = e.target.value
             e.target.parentElement.children[1].value = e.target.selectedOptions[0].innerText.trim()
             e.target.parentElement.children[1].className = "autocomplete-found"

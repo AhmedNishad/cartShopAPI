@@ -2,19 +2,20 @@
 using Shopping.Business.Entities;
 using Shopping.Data.Access;
 using Shopping.Data.Entities;
+using Shopping.Data.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Shopping.Business.Services
 {
-    public class CustomerService
+    public class CustomerService : ICustomerService
     {
         private readonly IMapper mapper;
-        private readonly CustomerRepository repository;
+        private readonly ICustomerRepository repository;
 
 
-        public CustomerService(CustomerRepository customerRepository, IMapper mapper)
+        public CustomerService(ICustomerRepository customerRepository, IMapper mapper)
         {
             //var config = new MapperConfiguration(cfg => {
             //    cfg.CreateMap<CustomerBO, Customer>().ReverseMap();

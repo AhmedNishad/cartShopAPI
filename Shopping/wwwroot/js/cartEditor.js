@@ -93,13 +93,11 @@ addLineItem.addEventListener('click', e => {
 function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
     for (var i = 0; i < lineItemContainer.children.length; i++) {
         var hiddenProductInput = lineItemContainer.children[i].firstElementChild.firstElementChild
-       // var productName =
         var productQuantityHiddenInput = lineItemContainer.children[i].children[1].firstElementChild
         var productQuantity = lineItemContainer.children[i].children[1].children[1]
         var lineTotalHiddenInput = lineItemContainer.children[i].children[2].firstElementChild
         var totalOfLine = lineItemContainer.children[i].children[2].children[1]
         if (hiddenProductInput.value == productId) {
-            //  hiddenInput.
             productQuantityHiddenInput.value = quantity
             productQuantity.innerText = quantity
             lineTotalHiddenInput.value = lineTotal

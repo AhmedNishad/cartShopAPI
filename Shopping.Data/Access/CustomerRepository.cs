@@ -1,4 +1,5 @@
 ﻿using Shopping.Data.Entities;
+using Shopping.Data.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace Shopping.Data.Access
 {
-    public class CustomerRepository
+    public class CustomerRepository : ICustomerRepository
     {
         private readonly ShoppingContext db;
 

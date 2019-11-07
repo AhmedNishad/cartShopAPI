@@ -10,19 +10,20 @@ using Shopping.Models;
 using Shopping.Business.Services;
 using AutoMapper;
 using Shopping.Business.Entities;
+using Shopping.Business;
 
 namespace Shopping.Controllers
 {
     [Authorize]
     public class OrderController : Controller
     {
-        private readonly ProductService productService;
-        private readonly OrderService orderService;
+        private readonly IProductService productService;
+        private readonly IOrderService orderService;
         private readonly IMapper mapper;
 
-        private CustomerService customerService { get; }
+        private ICustomerService customerService { get; }
 
-        public OrderController(ProductService productService, CustomerService customerService, OrderService orderService, IMapper mapper)
+        public OrderController(IProductService productService, ICustomerService customerService, IOrderService orderService, IMapper mapper)
         {
             this.productService = productService;
             this.customerService = customerService;
@@ -126,16 +127,25 @@ namespace Shopping.Controllers
             return RedirectToAction("ViewOrder", new { orderId = result });
         }
 
-        public IActionResult ViewOrders()
+        public IActionResult ViewOrders(int pageNumber, string sortBy)
         {
+            
             var model = new OrdersViewModel();
             model.Customers = mapper.Map<List<Customer>>(customerService.GetCustomers());
-            model.Orders = mapper.Map<List<Order>>(orderService.GetOrders());
+            model.Orders = mapper.Map<List<Order>>(orderService.GetOrders(pageNumber, sortBy));
+            model.Next = orderService.AreThereRemainingOrders(pageNumber);
+            model.SortBy = sortBy;
+            model.PageNumber = pageNumber;
             return View(model);
         }
 
         public IActionResult ViewOrdersForCustomer(int customerId)
         {
+            // If customer isn't found. Send back to all orders
+            if(customerId == 0)
+            {
+                return RedirectToAction("ViewOrders", new { pageNumber = 0 });
+            }
             var model = new OrdersViewModel();
             model.SelectedCustomerName = mapper.Map<Customer>(customerService.GetCustomerById(customerId)).Name;
             model.Orders = mapper.Map<List<Order>>(orderService.GetOrdersForCustomer(customerId));

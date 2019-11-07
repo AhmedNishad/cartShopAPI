@@ -5,18 +5,19 @@ using System.Collections.Generic;
 using System.Text;
 using AutoMapper;
 using Shopping.Data.Entities;
+using Shopping.Data.Interfaces;
 
 namespace Shopping.Business.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         public MapperConfiguration config { get; private set; }
 
         private readonly IMapper mapper;
-        private readonly ProductRepository repository;
+        private readonly IProductRepository repository;
 
 
-        public ProductService(ProductRepository productRepository, IMapper mapper)
+        public ProductService(IProductRepository productRepository, IMapper mapper)
         {
             this.mapper = mapper;   
             this.repository = productRepository;

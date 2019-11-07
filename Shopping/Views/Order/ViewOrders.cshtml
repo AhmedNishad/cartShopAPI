@@ -35,34 +35,47 @@
 }
 
 <div class="row">
-<div class="col-md-10 offset-1">
-<table class="table">
-    <thead>
-        <tr>
-            <td>Customer</td>
-            <td>Amount</td>
-            <td>Date</td>
-            <td>Actions</td>
-        </tr>
-    </thead>
-    @foreach (var order in Model.Orders)
-    {
-        <tr>
-            <td>
-                <h3>@order.Customer.Name </h3>
-            </td>
-            <td>
-                <h4> $@order.Total</h4>
-            </td>
-            <td>
-                <h5>@order.Date.ToShortDateString()</h5>
-            </td>
-            <td>
-                <a asp-action="ViewOrder" class="btn btn-secondary" asp-route-orderId="@order.Id">Edit</a>
-                <a asp-action="DeleteOrder" class="btn btn-warning" asp-route-orderId="@order.Id">Delete</a>
-            </td>
-        </tr>
-    }
-</table>
-</div>
+    <div class="col-md-10 offset-1">
+        <table class="table">
+            <thead>
+                <tr>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Customer">Customer</a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Total">Amount</a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Latest">Date</a></td>
+                    <td>Actions</td>
+                </tr>
+            </thead>
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>
+                        <h3>@order.Customer.Name </h3>
+                    </td>
+                    <td>
+                        <h4> $@order.Total</h4>
+                    </td>
+                    <td>
+                        <h5>@order.Date.ToShortDateString()</h5>
+                    </td>
+                    <td>
+                        <a asp-action="ViewOrder" class="btn btn-secondary" asp-route-orderId="@order.Id">Edit</a>
+                        <a asp-action="DeleteOrder" class="btn btn-warning" asp-route-orderId="@order.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </table>
+        <div class="col-md-5 offset-2">
+            @if (Model.PageNumber != 0)
+            {
+                <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber-1)">Back</a>
+
+            }
+            <span class="bg-dark text-white ">@(Model.PageNumber + 1)</span>
+            @if (Model.Next)
+            {
+                <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber+1)">Next</a>
+            }
+        </div>
+        
+    </div>
 </div>
