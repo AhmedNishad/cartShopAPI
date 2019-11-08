@@ -32,9 +32,10 @@
             @foreach (var item in Model.LineItems)
             {
                 <tr class="editable-item" data-line-item-id="@item.Id" data-product-quantity="@item.Product.QuantityAtHand" data-product-name="@item.Product.ProductName" data-product-price="@item.Product.UnitPrice" data-product-id="@item.Product.Id">
-                    <td><input type="hidden" value="@item.Product.Id" name="[@lineIdCount].product.id" />@item.Product.ProductName</td>
-                    <td><input type="hidden" value="@item.Quantity" name="[@lineIdCount].quantity" />@item.Quantity</td>
-                    <td><input type="hidden" value="@item.Total" name="[@lineIdCount].total" />@item.Total</td>
+                    
+                    <td><input type="hidden" value="@item.Product.Id" name="[@lineIdCount].product.id" /><h6>@item.Product.ProductName</h6><input type="hidden" value="@item.Id" name="[@lineIdCount].id" /></td>
+                    <td><input type="hidden" value="@item.Quantity" name="[@lineIdCount].quantity" /><h6>@item.Quantity</h6></td>
+                    <td><input type="hidden" value="@item.Total" name="[@lineIdCount].total" /><h6>@item.Total</h6></td>
                     <td>
                         @if (Model.LineItems.Count > 1)
                         {

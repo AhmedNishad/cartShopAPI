@@ -1,7 +1,7 @@
 ﻿
 var editableItems = document.getElementsByClassName("editable-item")
 var editingFormField = document.getElementById("editing-form-field")
-editingFormField.style.display = 'none'
+editingFormField.hidden = true
 var editButton = document.getElementById('edit-line-item')
 var submitButton = document.getElementById('submit-button')
 var productPickerNew = document.getElementById('product-picker-new')
@@ -38,9 +38,7 @@ function getSelectedOptionElement(selectedId) {
     
 }
 
-for (var j = 0; j < removeButtons.length; j++) {
-    removeButtons[j].addEventListener('click', removeLineItem);
-}
+
 
 submitButton.disabled = true;
 
@@ -48,6 +46,7 @@ addLineItem.disabled = true
 
 
 productInput.addEventListener('input', (e) => {
+    editingFormField.hidden = true
    if (e.target.value.length > 1) {
         console.log(productPickerNew.value)
         selectedProduct = getSelectedOptionElement(productPickerNew.value)
@@ -73,7 +72,6 @@ quantityInputNew.addEventListener('input', (e) => {
 })
 
 quantityInputEdit.addEventListener('input', (e) => {
-    console.log(selectedProduct)
     
     if (e.target.value == "" || parseInt(e.target.value) < 1 || parseInt(e.target.value) > quantityInputEdit.max) {
         editButton.disabled = true
@@ -88,40 +86,54 @@ for (var i = 0; i < editableItems.length; i++) {
 }
 
 function editingItem(e) {
-    console.log(e.target.parentElement.getAttribute('data-product-name'))
-    editingFormField.children[0].firstElementChild.innerText = e.target.parentElement.getAttribute('data-product-name')
-    editingFormField.setAttribute('price', e.target.parentElement.getAttribute('data-product-price'))
-    console.log(editingFormField.children[0].firstElementChild.children[2])
-    console.log(editingFormField.children)
-    editingFormField.setAttribute('data-product-id',e.target.parentElement.getAttribute('data-product-id'))
-    //editingFormField.children[1].children[1].value = e.target.parentElement.getAttribute('data-line-item-id')
-    e.target.parentElement.insertAdjacentElement('afterend', editingFormField)
-    editingFormField.style.display = 'block'
-    console.log(e.target.parentElement.getAttribute('data-product-id'))
-    //editingFormField.children[0].firstElementChild.value = e.target.parentElement.getAttribute('data-product-id')
-    editingFormField.children[1].firstElementChild.value = parseInt(e.target.parentElement.children[1].innerText)
-    editingFormField.children[1].firstElementChild.max = e.target.parentElement.getAttribute('data-product-quantity')
-    editButton.disabled = false
-    //editingFormField.children[0].firstElementChild.children[1].value = e.target.parentElement.children[0].innerText
-   // editingFormField.children[0].firstElementChild.children[0].value = e.target.parentElement.getAttribute('data-product-id')
+    var tableRow = e.target.parentElement.parentElement
+    console.log(tableRow)
+    if (tableRow.classList.contains('editable-item') && !e.target.classList.contains('remove-button')) {
+        editingFormField.hidden = false
+
+        editingFormField.children[0].firstElementChild.innerText = tableRow.getAttribute('data-product-name')
+        editingFormField.setAttribute('price', tableRow.getAttribute('data-product-price'))
+        
+       
+        editingFormField.setAttribute('data-product-id', tableRow.getAttribute('data-product-id'))
+        tableRow.insertAdjacentElement('afterend', editingFormField)
+       // editingFormField.style.display = 'block'
+       
+        editingFormField.children[1].firstElementChild.value = parseInt(tableRow.children[1].innerText)
+        editingFormField.children[1].firstElementChild.max = tableRow.getAttribute('data-product-quantity')
+        editButton.disabled = false
+        console.log(editingFormField)
+
+    }
 }
 
 editButton.addEventListener('click', editLineItem)
 
 function editLineItem(e) {
     e.preventDefault()
+    
     var newlyAddedQuantity = e.target.parentElement.parentElement.children[1].firstElementChild.value
-    var modifyingRow = findModifyingRow(e.target.parentElement.parentElement.getAttribute('data-product-id'))
-    var quantityDisplay = modifyingRow.children[1]
+    console.log(editingFormField.getAttribute('data-product-id'))
+    var modifyingRow = findModifyingRow(editingFormField.getAttribute('data-product-id'))
+    var newPrice = parseInt(newlyAddedQuantity) * parseInt(modifyingRow.getAttribute('data-product-price'))
+    var quantityDisplay = modifyingRow.children[1].children[1]
+    var priceDisplay = modifyingRow.children[2].children[1]
+    var quantityInput = modifyingRow.children[1].firstElementChild
+    var priceInput = modifyingRow.children[2].firstElementChild
     quantityDisplay.innerText = newlyAddedQuantity
-
+    priceDisplay.innerText = newPrice
+    priceInput.value = parseInt(newPrice)
+    quantityInput.value = parseInt(newlyAddedQuantity)
 }
 
 function findModifyingRow(productId) {
     for (var o = 0; o < lineItemContainer.children.length; o++) {
         var possibleRow = lineItemContainer.children[o]
-        if (possibleRow.getAttribute('data-product-id') == productId)
+        if (possibleRow.getAttribute('data-product-id') == productId) {
+
+            console.log(possibleRow)
             return possibleRow
+        }
     }
     return null
 }
@@ -136,6 +148,10 @@ function addIdCounter() {
             grandChildren[0].firstElementChild.setAttribute("name", `[${orderId}].product.id`)
             grandChildren[1].firstElementChild.setAttribute("name", `[${orderId}].quantity`)
             grandChildren[2].firstElementChild.setAttribute("name", `[${orderId}].total`)
+            if (grandChildren[0].children[2] != null) {
+                grandChildren[0].children[2].setAttribute("name", `[${orderId}].id`)
+
+            }
             orderId++
 
         }
@@ -201,6 +217,7 @@ addLineItem.addEventListener('click', e => {
 })
 
 function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
+    debugger
     for (var i = 0; i < lineItemContainer.children.length; i++) {
         var hiddenProductInput = lineItemContainer.children[i].firstElementChild.firstElementChild
         var productQuantityHiddenInput = lineItemContainer.children[i].children[1].firstElementChild
@@ -232,12 +249,16 @@ function updateTotal() {
     totalOutput.innerText = total
 }
 
+for (var j = 0; j < removeButtons.length; j++) {
+    removeButtons[j].addEventListener('click', removeLineItem);
+}
+
 function removeLineItem(e) {
     e.preventDefault()
     var toRemove = e.target.parentElement.parentElement;
     productPickerNew.value = toRemove.getAttribute('data-product-id')
+    editingFormField.hidden = true
     
-    productPickerNew.options[productPickerNew.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInputNew.max) + parseInt(toRemove.children[1].firstElementChild.value))
     lineItemContainer.removeChild(toRemove);
     addIdCounter()
     updateTotal()
