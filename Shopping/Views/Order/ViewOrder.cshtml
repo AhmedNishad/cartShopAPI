@@ -10,7 +10,7 @@
 
 <a class="btn btn-warning text-right" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">Delete</a>
 
-<form action="" method="post" autocomplete="off">
+<form asp-action="UpdateOrder" method="post" autocomplete="off">
     <table class="table">
         <thead>
             <tr>
@@ -26,7 +26,7 @@
                     <h6></h6>
                 </td>
                 <td><input id="quantity-input-edit" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
-                <td><button class="btn btn-info" id="edit-line-item" asp-action="UpdateLineItem">Edit</button></td>
+                <td><button class="btn btn-info" id="edit-line-item">Edit</button></td>
             </tr>
             <tbody id="line-item-container">
             @foreach (var item in Model.LineItems)
@@ -81,8 +81,8 @@
     <div class="row">
         <div class="col-4 offset-5">
             <div class="input-group">
+                <input type="hidden" value="@Model.Order.Id" name="orderID" />
                 <input class="btn btn-success input-group-btn" id="submit-button" value="Save" type="submit" />
-
             </div>
 
         </div>

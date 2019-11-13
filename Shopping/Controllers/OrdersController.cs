@@ -114,6 +114,7 @@ namespace Shopping.Controllers
         //    return RedirectToAction("ViewOrder", new { orderId = result });
         //}
 
+            // Unimplimented
         [HttpPost]
         public IActionResult UpdateLineItem(int lineId, OrderLineItem orderLineItem, int productId)
         {
@@ -125,6 +126,19 @@ namespace Shopping.Controllers
                 return View("ErrorDisplay", new ErrorModel { Message = $"There are inadequate products, you have requested {-1 * result} more than we capacity for {orderLineItem.Product.ProductName}" });
             }
             return RedirectToAction("ViewOrder", new { orderId = result });
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrder(List<OrderLineItem> lineItems, int orderID)
+        {
+            try
+            {
+                orderService.UpdateLineItemsForOrder(mapper.Map<List<OrderLineItemBO>>(lineItems), orderID);
+            }catch(Exception e)
+            {
+                return View("ErrorDisplay", new ErrorModel { Message = e.Message });
+            }
+            return RedirectToAction("ViewOrder",new { orderId = orderID });
         }
 
         public IActionResult ViewOrders(int pageNumber, string sortBy)

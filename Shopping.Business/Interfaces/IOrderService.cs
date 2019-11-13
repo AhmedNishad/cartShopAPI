@@ -16,6 +16,6 @@ namespace Shopping.Business
         int UpdateLineItem(int lineId, OrderLineItemBO lineItem);
         int DeleteOrder(int Id);
         int DeleteLineItemById(int lineId);
-
+        void UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId);
     }
 }

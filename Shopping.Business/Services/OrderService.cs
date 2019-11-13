@@ -216,5 +216,52 @@ namespace Shopping.Business.Services
         {
             return repository.DeleteLineItemById(lineId);
         }
+
+        public void UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId)
+        {
+            var existingOrder = GetOrderById(orderId);
+            var existingItems = existingOrder.LineItems;
+            // Remove items that don't exist in the new order
+            for (int i = 0; i < existingItems.Count; i++ )
+            {
+                var oldItem = existingItems[i];
+                if (!lineItems.Exists(l=> l.Id == oldItem.Id))
+                {
+                    existingOrder.LineItems.Remove(oldItem);
+                    repository.DeleteLineItemById(oldItem.Id);
+                }
+                else
+                {
+                  //  repository.UpdateLineItem(mapper.Map<OrderLineItemDO>(oldItem));
+                    var changedItem = lineItems.FirstOrDefault(l => l.Id == oldItem.Id);
+                    oldItem.Quantity = changedItem.Quantity;
+                    oldItem.Total = changedItem.Total;
+                }
+            }
+            // Sort through and find the line items without an Id
+            var newLineItems = new List<OrderLineItemBO>();
+            for(int i = 0; i < lineItems.Count; i++)
+            {
+                var item = lineItems[i];
+                var newProduct = mapper.Map<ProductBO>(productRepository.GetProductById(item.Product.Id));
+                var newItem = new OrderLineItemBO
+                {
+                    Product = newProduct,
+                    Order = existingOrder,
+                    OrderId = existingOrder.Id,
+                    Quantity = item.Quantity,
+                    Total = item.Total
+                };
+                if (item.Id == 0)
+                {
+                    lineItems.Remove(item);
+                    newLineItems.Add(newItem);
+                    existingOrder.LineItems.Add(newItem);
+                }
+            }
+            // Add the new lineItems to the order
+            UpdateOrder(existingOrder);
+            // Update the order
+        }
     }
 }

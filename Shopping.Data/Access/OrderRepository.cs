@@ -144,7 +144,7 @@ namespace Shopping.Data.Access
         public OrderDO GetOrderById(int OrderId)
         {
 
-            return db.Orders.Include(o => o.Customer).Include(o => o.LineItems).FirstOrDefault(o => o.OrderId == OrderId);
+            return db.Orders.AsNoTracking().Include(o => o.Customer).Include(o => o.LineItems).ThenInclude(l=>l.Product).FirstOrDefault(o => o.OrderId == OrderId);
         }
         public OrderLineItemDO GetLineItemById(int lineId)
         {
@@ -172,7 +172,6 @@ namespace Shopping.Data.Access
             db.SaveChanges();
         }
 
-        // Redundant
         public void UpdateLineItemsForOrder(List<OrderLineItemDO> orderLineItems, int orderId)
         {
             foreach (var item in orderLineItems)

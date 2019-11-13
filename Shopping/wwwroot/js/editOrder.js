@@ -37,9 +37,6 @@ function getSelectedOptionElement(selectedId) {
     return null
     
 }
-
-
-
 submitButton.disabled = true;
 
 addLineItem.disabled = true
@@ -49,7 +46,7 @@ productInput.addEventListener('input', (e) => {
     editingFormField.hidden = true
    if (e.target.value.length > 1) {
         console.log(productPickerNew.value)
-        selectedProduct = getSelectedOptionElement(productPickerNew.value)
+       selectedProduct = getSelectedOptionElementByInput(productPickerNew.value) //getSelectedOptionElement(productPickerNew.value)
     }
 }
 )
@@ -62,6 +59,8 @@ productSelect.addEventListener('change', (e) => {
 )
 
 quantityInputNew.addEventListener('input', (e) => {
+    editingFormField.hidden = true
+
     console.log(selectedProduct)
     quantityInputNew.max = selectedProduct.getAttribute('data-unit-quantity')
     if (e.target.value == "" || parseInt(e.target.value) < 1 || parseInt(e.target.value) > quantityInputNew.max) {
@@ -124,6 +123,7 @@ function editLineItem(e) {
     priceDisplay.innerText = newPrice
     priceInput.value = parseInt(newPrice)
     quantityInput.value = parseInt(newlyAddedQuantity)
+    checkSubmit()
 }
 
 function findModifyingRow(productId) {
@@ -201,6 +201,7 @@ addLineItem.addEventListener('click', e => {
         addLineItem.setAttribute('data-product-id', selectedProduct.getAttribute('data-product-id'))
 
         lineItemElement.classList.add('editable-item')
+        lineItemElement.addEventListener("click", editingItem)
         lineItemElement.appendChild(productIdElement);
         lineItemElement.appendChild(quantityElement);
         lineItemElement.appendChild(totalElement);
