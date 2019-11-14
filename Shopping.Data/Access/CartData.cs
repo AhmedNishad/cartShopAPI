@@ -192,7 +192,6 @@ namespace Shopping.Data
                 return reduceResult;
             }
             item.Quantity = lineItem.Quantity;
-            item.Total = lineItem.Total;
             db.OrderLineItems.Update(item);
             // Update Product Quantity
             var updatedOrder = db.Orders.FirstOrDefault(o => o.OrderId == item.OrderId);
@@ -215,7 +214,6 @@ namespace Shopping.Data
                 {
                     var existingItem = existingLineItems.FirstOrDefault(l => l.Product.ProductId == item.Product.ProductId);
                     existingItem.Quantity += item.Quantity;
-                    existingItem.Total += item.Total;
                     orderItems.Remove(item);
                 }
                 else

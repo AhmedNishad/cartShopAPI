@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Business;
 using Shopping.Business.Entities;
@@ -12,6 +13,7 @@ using Shopping.Models;
 
 namespace Shopping.Controllers
 {
+    [Authorize]
     public class CustomersController : Controller
     {
         private ICustomerService customerService { get; }
@@ -21,6 +23,7 @@ namespace Shopping.Controllers
             this.mapper = mapper;
             this.customerService = customerService;
         }
+        [ValidateAntiForgeryToken]
         public IActionResult Index()
         {
             return View();
@@ -31,7 +34,7 @@ namespace Shopping.Controllers
             var model = new Customer();
             return View(model);
         }
-
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult AddCustomer(Customer customer)
         {
@@ -42,11 +45,8 @@ namespace Shopping.Controllers
                     return View(customer);
                 }
                 int result = customerService.AddCustomer(mapper.Map<CustomerBO>(customer));
-                if (result == 0)
-                {
-                    throw new Exception("Customer already exists");
-                }
-                return RedirectToAction("Order","Index");
+                
+                return RedirectToAction("Index", "Order");
             }
             catch (Exception e)
             {

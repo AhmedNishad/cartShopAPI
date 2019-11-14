@@ -4,7 +4,11 @@ using System.Text;
 
 namespace Shopping.Business.Exceptions
 {
-    class InadequateProductException
+    public class InadequateProductException : Exception
     {
+        public InadequateProductException(int quantityMissing): base($"You have requested {quantityMissing} more products than we have quantity for")
+        {
+
+        }
     }
 }

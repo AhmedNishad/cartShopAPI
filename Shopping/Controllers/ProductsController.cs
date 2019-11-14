@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Business;
 using Shopping.Business.Entities;
@@ -12,6 +13,7 @@ using Shopping.Models;
 
 namespace Shopping.Controllers
 {
+    [Authorize]
     public class ProductsController : Controller
     {
         private IProductService productService { get; }
@@ -43,15 +45,22 @@ namespace Shopping.Controllers
         }
 
         [HttpPost]
-        public IActionResult ViewProduct(Product product)
+        public IActionResult UpdateProduct(Product product)
         {
             if (!ModelState.IsValid)
             {
                 product.QuantityAtHand = 0;
                 return View(product);
             }
-            int result = productService.QuantityUpdateForProduct(product.Id, product.QuantityAtHand);
-            return RedirectToAction("ViewProduct", new { productId = result });
+            try
+            {
+                int result = productService.QuantityUpdateForProduct(product.Id, product.QuantityAtHand);
+                return RedirectToAction("ViewProduct", new { productId = result });
+            }
+            catch (Exception e)
+            {
+                return View("ErrorDisplay", new ErrorModel { Message = e.Message });
+            }
         }
 
         [HttpGet]
@@ -70,6 +79,7 @@ namespace Shopping.Controllers
                 return View(product);
             }
             int result = productService.AddProduct(mapper.Map<ProductBO>(product));
+            // If product exists. Redirect to existing product
             return RedirectToAction("ViewProduct", new { productId = result });
         }
     }

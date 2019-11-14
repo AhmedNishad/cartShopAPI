@@ -21,7 +21,8 @@ namespace Shopping.Data.Access
             // Check if product of same name exists
             if (db.Products.ToList().Exists(p => p.ProductName.ToLower() == product.ProductName.ToLower()))
             {
-                return db.Products.FirstOrDefault(p => p.ProductName.ToLower() == product.ProductName.ToLower()).ProductId;
+                return db.Products.FirstOrDefault(p => p.ProductName.ToLower() == product.ProductName.ToLower())
+                    .ProductId;
             }
             db.Products.Add(product);
             db.SaveChanges();
@@ -35,12 +36,21 @@ namespace Shopping.Data.Access
 
         public ProductDO GetProductById(int id)
         {
-            return db.Products.FirstOrDefault(p => p.ProductId == id);
+            var product = db.Products.AsNoTracking().FirstOrDefault(p => p.ProductId == id);
+            if (product == null)
+            {
+                throw new Exception($"Product does not exist for Id {id}");
+            }
+            return product;
         }
 
         public int QuantityUpdateForProduct(int ProductId, int newQuantity)
         {
             var product = db.Products.FirstOrDefault(p => p.ProductId == ProductId);
+            if(product == null)
+            {
+                throw new Exception($"Product does not exist for Id {ProductId}");
+            }
             product.QuantityAtHand = newQuantity;
             db.Products.Update(product);
             db.SaveChanges();

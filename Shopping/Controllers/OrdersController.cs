@@ -23,7 +23,8 @@ namespace Shopping.Controllers
 
         private ICustomerService customerService { get; }
 
-        public OrderController(IProductService productService, ICustomerService customerService, IOrderService orderService, IMapper mapper)
+        public OrderController(IProductService productService, ICustomerService customerService, 
+            IOrderService orderService, IMapper mapper)
         {
             this.productService = productService;
             this.customerService = customerService;
@@ -40,7 +41,7 @@ namespace Shopping.Controllers
             return View(model);
         }
         [HttpPost]
-        public IActionResult Index(DateTime date, int customerId, List<OrderLineItem> lineItems)
+        public IActionResult AddOrder(DateTime date, int customerId, List<OrderLineItem> lineItems)
         {
             try
             {
@@ -60,21 +61,24 @@ namespace Shopping.Controllers
                 foreach (var item in lineItems)
                 {
                     item.Product = mapper.Map<Product>(productService.GetProductById(item.Product.Id));
-                    item.Total = item.Product.UnitPrice * item.Quantity;
+                    item.LinePrice = item.Product.UnitPrice;
                 }
 
                 date.AddHours(DateTime.Now.Hour);
-                var results = mapper.Map<List<OrderLineItem>>(orderService.AddOrder(customerId, date, mapper.Map<List<OrderLineItemBO>>(lineItems)));
+
+                var results = mapper.Map<List<OrderLineItem>>(orderService.AddOrder(customerId, date, 
+                    mapper.Map<List<OrderLineItemBO>>(lineItems)));
                 var last = new OrderLineItem();
-                if (results.Count == 0)
+                // If there is only one order remaining in the returned list of orders there are inadequate
+                //      products for just this product ( Errorr thrown at BL )
+                if (results.Count != 0)
                 {
-                    throw new Exception($"There are inadequate products");
-                }
-                else
-                {
+                    // Container to get the created orderId
                     last = results[results.Count - 1];
                 }
                 results.Remove(last);
+                // If there are many line items with quantity too high redirect to add order with order items entered 
+                //with appropriate quantities
                 if (results.Count > 0)
                 {
                     var model = new IndexViewModel();
@@ -82,10 +86,10 @@ namespace Shopping.Controllers
                     model.Customers = mapper.Map<List<Customer>>(customerService.GetCustomers());
                     model.Date = date;
                     model.Products = mapper.Map<List<Product>>(productService.GetProducts());
-                    return View(model);
+                    return View("Index",model);
                 }
 
-                return RedirectToAction("ViewOrder", new { orderId = last.OrderId });
+                return RedirectToAction("ViewOrdersForCustomer", new {  customerId, addedSuccessfully=true });
             } catch (Exception e)
             {
                 return View("ErrorDisplay", new ErrorModel { Message = e.Message });
@@ -95,7 +99,6 @@ namespace Shopping.Controllers
         public IActionResult ViewOrder(int orderId)
         {
             var model = new OrderViewModel();
-            // Aggregate all line Item Totals
             model.LineItems = mapper.Map<List<OrderLineItem>>(orderService.GetLineItemsForOrder(orderId));
             model.Order = mapper.Map<Order>(orderService.GetOrderById(orderId));
             model.Products = mapper.Map<List<Product>>(productService.GetProducts());
@@ -114,19 +117,18 @@ namespace Shopping.Controllers
         //    return RedirectToAction("ViewOrder", new { orderId = result });
         //}
 
-            // Unimplimented
-        [HttpPost]
-        public IActionResult UpdateLineItem(int lineId, OrderLineItem orderLineItem, int productId)
-        {
-            orderLineItem.Product = mapper.Map<Product>(productService.GetProductById(productId));
-            orderLineItem.Total = orderLineItem.Product.UnitPrice * orderLineItem.Quantity;
-            int result = orderService.UpdateLineItem(lineId, mapper.Map<OrderLineItemBO>(orderLineItem));
-            if (result < 0)
-            {
-                return View("ErrorDisplay", new ErrorModel { Message = $"There are inadequate products, you have requested {-1 * result} more than we capacity for {orderLineItem.Product.ProductName}" });
-            }
-            return RedirectToAction("ViewOrder", new { orderId = result });
-        }
+        //[HttpPost]
+        //public IActionResult UpdateLineItem(int lineId, OrderLineItem orderLineItem, int productId)
+        //{
+        //    orderLineItem.Product = mapper.Map<Product>(productService.GetProductById(productId));
+        //    orderLineItem.Total = orderLineItem.Product.UnitPrice * orderLineItem.Quantity;
+        //    int result = orderService.UpdateLineItem(lineId, mapper.Map<OrderLineItemBO>(orderLineItem));
+        //    if (result < 0)
+        //    {
+        //        return View("ErrorDisplay", new ErrorModel { Message = $"There are inadequate products, you have requested {-1 * result} more than we capacity for {orderLineItem.Product.ProductName}" });
+        //    }
+        //    return RedirectToAction("ViewOrder", new { orderId = result });
+        //}
 
         [HttpPost]
         public IActionResult UpdateOrder(List<OrderLineItem> lineItems, int orderID)
@@ -141,19 +143,37 @@ namespace Shopping.Controllers
             return RedirectToAction("ViewOrder",new { orderId = orderID });
         }
 
-        public IActionResult ViewOrders(int pageNumber, string sortBy)
+        public IActionResult ViewOrders(int pageNumber, string sortBy, bool successfullyDeleted = false)
         {
-            
             var model = new OrdersViewModel();
+            if (successfullyDeleted)
+            {
+                model.SuccessfullyDeleted = true;
+            }
             model.Customers = mapper.Map<List<Customer>>(customerService.GetCustomers());
-            model.Orders = mapper.Map<List<Order>>(orderService.GetOrders(pageNumber, sortBy));
-            model.Next = orderService.AreThereRemainingOrders(pageNumber);
+            var OrderPage = orderService.GetOrders(pageNumber, sortBy);
+
+            model.Orders = mapper.Map<List<Order>>(OrderPage.Orders);
+            model.Next = AreThereRemainingOrders(pageNumber, OrderPage.OrdersCount, OrderPage.Skip);
             model.SortBy = sortBy;
             model.PageNumber = pageNumber;
             return View(model);
         }
 
-        public IActionResult ViewOrdersForCustomer(int customerId)
+        private bool AreThereRemainingOrders(int pageNumber,int totalOrders,int skipCount)
+        {
+            // Check if there enough orders to skip through
+            if(((pageNumber+1) * skipCount) < totalOrders)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public IActionResult ViewOrdersForCustomer(int customerId, bool addedSuccessfully = false)
         {
             // If customer isn't found. Send back to all orders
             if(customerId == 0)
@@ -161,22 +181,27 @@ namespace Shopping.Controllers
                 return RedirectToAction("ViewOrders", new { pageNumber = 0 });
             }
             var model = new OrdersViewModel();
+            if (addedSuccessfully)
+            {
+                model.SuccessfullyAdded = true;
+            }
             model.SelectedCustomerName = mapper.Map<Customer>(customerService.GetCustomerById(customerId)).Name;
             model.Orders = mapper.Map<List<Order>>(orderService.GetOrdersForCustomer(customerId));
             model.Customers = mapper.Map<List<Customer>>(customerService.GetCustomers());
             return View("ViewOrders", model);
         }
 
-        [HttpGet]
-        public IActionResult DeleteLineItemById(int lineId, int orderID)
-        {
-            int result = orderService.DeleteLineItemById(lineId);
-            if (result == 0)
-            {
-                return RedirectToAction("ShowOrders");
-            }
-            return RedirectToAction("ViewOrder", new { orderId = orderID });
-        }
+        // Unimplimented
+        //[HttpGet]
+        //public IActionResult DeleteLineItemById(int lineId, int orderID)
+        //{
+        //    int result = orderService.DeleteLineItemById(lineId);
+        //    if (result == 0)
+        //    {
+        //        return RedirectToAction("ShowOrders");
+        //    }
+        //    return RedirectToAction("ViewOrder", new { orderId = orderID });
+        //}
 
         [HttpGet]
         public IActionResult DeleteOrder(int orderID)
@@ -199,7 +224,7 @@ namespace Shopping.Controllers
             {
                 return RedirectToAction("Index");
             }
-            return RedirectToAction("ViewOrders");
+            return RedirectToAction("ViewOrders", new { successfullyDeleted = true});
             
         }
     }

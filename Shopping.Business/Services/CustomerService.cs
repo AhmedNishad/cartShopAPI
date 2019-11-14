@@ -17,10 +17,6 @@ namespace Shopping.Business.Services
 
         public CustomerService(ICustomerRepository customerRepository, IMapper mapper)
         {
-            //var config = new MapperConfiguration(cfg => {
-            //    cfg.CreateMap<CustomerBO, Customer>().ReverseMap();
-            //    cfg.CreateMap<List<CustomerBO>, List<Customer>>().ReverseMap();
-            //});
             this.mapper = mapper;
             this.repository = customerRepository;
         }
@@ -32,7 +28,12 @@ namespace Shopping.Business.Services
 
         public int AddCustomer(CustomerBO customer)
         {
-           return  repository.AddCustomer(mapper.Map<CustomerDO>(customer));
+            var result = repository.AddCustomer(mapper.Map<CustomerDO>(customer));
+            if(result == 0)
+            {
+                throw new Exception("Customer already exists");
+            }
+            return result;
         }
 
         public List<CustomerBO> GetCustomers()

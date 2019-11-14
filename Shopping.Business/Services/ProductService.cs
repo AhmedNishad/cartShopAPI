@@ -6,6 +6,7 @@ using System.Text;
 using AutoMapper;
 using Shopping.Data.Entities;
 using Shopping.Data.Interfaces;
+using Shopping.Business.Exceptions;
 
 namespace Shopping.Business.Services
 {
@@ -39,7 +40,9 @@ namespace Shopping.Business.Services
 
         public int QuantityUpdateForProduct(int id, int newQuantity)
         {
-            return repository.QuantityUpdateForProduct(id, newQuantity);
+            int result = repository.QuantityUpdateForProduct(id, newQuantity);
+
+            return result;
         }
 
     }

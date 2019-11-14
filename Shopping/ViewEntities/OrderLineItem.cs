@@ -14,7 +14,9 @@ namespace Shopping.Entities
         [Required]
         [Range(1, 1000)]
         public int Quantity { get; set; }
-        public int Total { get; set; }
+        public int LinePrice { get; set; }
+        
+        public int Total { get { return Quantity * LinePrice; } }
         public Product Product{ get; set; }
     }
 }

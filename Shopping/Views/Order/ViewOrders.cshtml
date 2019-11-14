@@ -6,6 +6,19 @@
 
 <a class="btn btn-link" asp-action="Index">Back</a>
 
+@if (Model.SuccessfullyAdded)
+{
+    <div class="bg-success" id="success-text">
+        <h4 class="text-center text-white">Order Successfully Added</h4>
+    </div>
+}
+@if (Model.SuccessfullyDeleted)
+{
+    <div class="bg-danger" id="delete-text">
+        <h4 class="text-center text-white">Order Successfully Deleted</h4>
+    </div>
+}
+
 <h1>Orders</h1>
 <form asp-action="ViewOrdersForCustomer" method="get">
     <div class="row">
@@ -29,7 +42,7 @@
     </div>
 </form>
 
-@if(Model.Orders.Count == 0)
+@if (Model.Orders.Count == 0)
 {
     <h3>No Orders have been made by this Customer.</h3>
 }
@@ -76,6 +89,17 @@
                 <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber+1)">Next</a>
             }
         </div>
-        
+
     </div>
 </div>
+
+<script>
+    var successText = document.getElementById("success-text")
+    setTimeout(() => {
+        successText.hidden = true
+    }, 5000);
+    var deleteText = document.getElementById("delete-text")
+    setTimeout(() => {
+        deleteText.hidden = true
+    }, 5000);
+</script>

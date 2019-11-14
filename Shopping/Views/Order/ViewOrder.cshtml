@@ -8,7 +8,7 @@
 <h1>Customer - @Model.Order.Customer.Name</h1>
 <h3>Date - @Model.Order.Date.ToShortDateString()</h3>
 
-<a class="btn btn-warning text-right" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">Delete</a>
+<a class="btn btn-warning col-1.5 text-right offset-10" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">Delete Order</a>
 
 <form asp-action="UpdateOrder" method="post" autocomplete="off">
     <table class="table">
@@ -20,10 +20,10 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            <tr id="editing-form-field">
+        <tbody id="edit-form-container">
+            <tr id="editing-form-field" class="bg-dark">
                 <td>
-                    <h6></h6>
+                    <h6 class="text-white text-center"></h6>
                 </td>
                 <td><input id="quantity-input-edit" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
                 <td><button class="btn btn-info" id="edit-line-item">Edit</button></td>
@@ -37,10 +37,7 @@
                     <td><input type="hidden" value="@item.Quantity" name="[@lineIdCount].quantity" /><h6>@item.Quantity</h6></td>
                     <td><input type="hidden" value="@item.Total" name="[@lineIdCount].total" /><h6>@item.Total</h6></td>
                     <td>
-                        @if (Model.LineItems.Count > 1)
-                        {
-                            <button class="btn btn-danger remove-button">Remove</button>
-                        }
+                        <button class="btn btn-danger remove-button">Remove</button>
                     </td>
                 </tr>
 

@@ -10,12 +10,15 @@ namespace Shopping.Data.Entities
     {
         [Key]
         public int LineId { get; set; }
+        public int LinePrice { get; set; }
         public OrderDO Order { get; set; }
         public int OrderId { get; set; }
         [Required]
         [Range(1, 1000)]
         public int Quantity { get; set; }
-        public int Total { get; set; }
+        public int Total 
+        { get { return LinePrice * Quantity; } }
+            
         public ProductDO Product{ get; set; }
     }
 }

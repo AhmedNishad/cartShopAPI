@@ -36,7 +36,12 @@ namespace Shopping.Data.Access
 
         public CustomerDO GetCustomerById(int CustomerId)
         {
-            return db.Customers.FirstOrDefault(c => c.CustomerId == CustomerId);
+            var customer = db.Customers.FirstOrDefault(c => c.CustomerId == CustomerId);
+            if(customer == null)
+            {
+                throw new Exception($"Customer of ID {CustomerId} does not exist");
+            }
+            return customer;
         }
     }
 }

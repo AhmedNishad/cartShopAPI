@@ -24,54 +24,49 @@ namespace Shopping.Data.Access
         }
 
 
-
-        public List<OrderLineItemDO> AddOrder(int CustomerId, DateTime date, List<OrderLineItemDO> orderLineItems)
-        {
-            throw new NotImplementedException();
-        }
-
         public OrderDO GetOrderForCustomerOnDate(int customerId, DateTime date)
         {
-            return db.Orders.AsNoTracking().Include(o => o.LineItems).ThenInclude(l => l.Product).FirstOrDefault(o => 
+            // No null check as is being checked in service method prior to getting
+            return db.Orders.Include(o => o.LineItems).ThenInclude(l => l.Product).Include(o=>o.Customer)
+                .AsNoTracking().FirstOrDefault(o => 
             ((o.Date.ToShortDateString() == date.ToShortDateString()) && 
             (o.Customer.CustomerId == customerId)));
         }
 
-        public int UpdateLineItem(OrderLineItemDO lineItem)
-        {
+        // Unimplimented
+        //public int UpdateLineItem(OrderLineItemDO lineItem)
+        //{
+        //    db.Update(lineItem);
+        //    db.SaveChanges();
+        //    return lineItem.OrderId;
+        //}
 
-            db.Update(lineItem);
-            db.SaveChanges();
-            return lineItem.OrderId;
-        }
+        //public int UpdateLineItems(List<OrderLineItemDO> lineItems)
+        //{
+        //    var existingOrder = db.Orders.FirstOrDefault(o => o.OrderId == lineItems[0].OrderId);
+        //    foreach (var item in lineItems)
+        //    {
+        //        db.OrderLineItems.Update(item);
+        //    }
+        //    existingOrder.Total = existingOrder.LineItems.Sum(o => o.Total);
 
-        public int UpdateLineItems(List<OrderLineItemDO> lineItems)
-        {
-            var existingOrder = db.Orders.FirstOrDefault(o => o.OrderId == lineItems[0].OrderId);
-            foreach (var item in lineItems)
-            {
-                db.OrderLineItems.Update(item);
-            }
-            existingOrder.Total = existingOrder.LineItems.Sum(o => o.Total);
-
-            db.SaveChanges();
-            return lineItems[0].OrderId;
-        }
+        //    db.SaveChanges();
+        //    return lineItems[0].OrderId;
+        //}
         public int UpdateProductQuantity(int toReduce, int productId)
         {
             var product = db.Products.FirstOrDefault(p => p.ProductId == productId);
+            // If there is less quantity than remaining or if product quantity at hand is 0, do not update
             if (product.QuantityAtHand == 0)
             {
                 return 0;
             }
             int remaining = product.QuantityAtHand - toReduce;
-            // If there is less quantity than remaining, do not update
             if (remaining < 0)
             {
                 return remaining;
             }
             product.QuantityAtHand = remaining;
-            db.Products.Update(product);
             db.SaveChanges();
             return remaining;
         }
@@ -90,41 +85,23 @@ namespace Shopping.Data.Access
             }
             product.QuantityAtHand = remaining;
             db.Products.Update(product);
+            db.SaveChanges();
             return remaining;
         }
         public void UpdateOrder(OrderDO updatedOrder)
         {
-            var existingOrder = GetOrderById(updatedOrder.OrderId);
-            //existingOrder.LineItems = updatedOrder.LineItems;
-            existingOrder.Total = updatedOrder.Total;
-            Debug.WriteLine(db.Entry(updatedOrder).State);
-            db.Orders.Update(existingOrder);
-            //db.Entry(updatedOrder).State = EntityState.Modified;
+            db.Orders.Update(updatedOrder);
             db.SaveChanges();
         }
         public void UpdateOrder(int updatedOrderId)
         {
-            var updatedOrder = db.Orders.Include(o => o.LineItems).FirstOrDefault(o => o.OrderId == updatedOrderId);
-            var orderItems = updatedOrder.LineItems;
-            var existingLineItems = new List<OrderLineItemDO>();
-            for (int i = 0; i < orderItems.Count; i++)
-            {
-                // Collect all line items of the order together ( Append Quantities )
-                var item = orderItems[i];
-                if (existingLineItems.Exists(l => l.Product.ProductId == item.Product.ProductId))
-                {
-                    // If item of same product already exists, remove it from list of orders
-                    var existingItem = existingLineItems.FirstOrDefault(l => l.Product.ProductId == item.Product.ProductId);
-                    existingItem.Quantity += item.Quantity;
-                    existingItem.Total += item.Total;
-                    orderItems.Remove(item);
-                }
-                else
-                {
-                    existingLineItems.Add(item);
-                }
-            }
-            updatedOrder.LineItems = existingLineItems;
+            var updatedOrder = db.Orders.Include(o => o.LineItems)
+                .FirstOrDefault(o => o.OrderId == updatedOrderId);
+            // No null check as is already being checked in service methods
+            
+            updatedOrder.Total = updatedOrder.LineItems.Sum(l => l.Total);
+            
+           // UpdateLineItemsForOrder(existingLineItems, updatedOrder.OrderId);
             // db.Orders.Update(updatedOrder);
             db.SaveChanges();
         }
@@ -136,20 +113,29 @@ namespace Shopping.Data.Access
             return orders;
         }
 
-        public IEnumerable<OrderDO> GetOrders()
+        public IQueryable<OrderDO> GetOrders()
         {
-            return db.Orders.Include(o => o.Customer);
+            return db.Orders.Include(o => o.Customer).AsQueryable();
         }
 
         public OrderDO GetOrderById(int OrderId)
         {
-
-            return db.Orders.AsNoTracking().Include(o => o.Customer).Include(o => o.LineItems).ThenInclude(l=>l.Product).FirstOrDefault(o => o.OrderId == OrderId);
+            var order = db.Orders.Include(o => o.Customer).Include(o => o.LineItems).ThenInclude(l => l.Product)
+                .AsNoTracking().FirstOrDefault(o => o.OrderId == OrderId);
+            if(order == null)
+            {
+                throw new Exception($"Order does not exist for ID {OrderId}");
+            }
+            return order;
         }
         public OrderLineItemDO GetLineItemById(int lineId)
         {
-
-            return db.OrderLineItems.Include(o => o.Product).FirstOrDefault(o => o.LineId == lineId);
+            var lineItem = db.OrderLineItems.Include(o => o.Product).FirstOrDefault(o => o.LineId == lineId);
+            if(lineItem == null)
+            {
+                throw new Exception($"Line item does not exist for line ID {lineId}");
+            }
+            return lineItem;
         }
 
         public int AddOrder(OrderDO order)
@@ -174,9 +160,26 @@ namespace Shopping.Data.Access
 
         public void UpdateLineItemsForOrder(List<OrderLineItemDO> orderLineItems, int orderId)
         {
-            foreach (var item in orderLineItems)
+            var orderItems = orderLineItems;
+            var existingLineItems = new List<OrderLineItemDO>();
+            for (int i = 0; i < orderItems.Count; i++)
             {
-                //db.OrderLineItems.Update(item);
+                // Collect all line items of the order together ( Append Quantities )
+                var item = orderItems[i];
+                if (existingLineItems.Exists(l => l.Product.ProductId == item.Product.ProductId))
+                {
+                    // If item of same product already exists, remove it from list of orders
+                    var existingItem = existingLineItems.FirstOrDefault(l => l.Product.ProductId == item.Product.ProductId);
+                    existingItem.Quantity += item.Quantity;
+                    orderItems.Remove(item);
+                }
+                else
+                {
+                    existingLineItems.Add(item);
+                }
+            }
+            foreach (var item in existingLineItems)
+            {
                 if(item.LineId == 0) 
                 {
                     db.Entry(item).State = EntityState.Added;
@@ -187,7 +190,6 @@ namespace Shopping.Data.Access
                 }
             }
             db.SaveChanges();
-        
         }
 
         public List<OrderDO> GetOrdersForCustomer(int customerId)
@@ -206,7 +208,7 @@ namespace Shopping.Data.Access
 
         public int DeleteLineItemById(int lineId)
         {
-            var item = db.OrderLineItems.Include(l => l.Product).Include(l => l.Order).FirstOrDefault(l => l.LineId == lineId);
+            var item = db.OrderLineItems.Include(l => l.Product).Include(l => l.Order).AsNoTracking().FirstOrDefault(l => l.LineId == lineId);
 
             var order = item.Order;
             order.LineItems = db.OrderLineItems.Include(l => l.Product).Where(l => l.OrderId == order.OrderId).ToList();
@@ -220,17 +222,18 @@ namespace Shopping.Data.Access
                 return 0;
             }
             // Update quantity of product
-            productRepository.QuantityUpdateForProduct(item.Product.ProductId, item.Product.QuantityAtHand + item.Quantity);
+            
             order.LineItems.Remove(item);
             order.Total = item.Order.LineItems.Sum(l => l.Total);
-            db.SaveChanges();
             UpdateOrder(order);
+           // db.SaveChanges();
             return 1;
         }
 
         public int DeleteOrder(int orderId)
         {
-            var deleteingOrder = db.Orders.Include(o => o.LineItems).ThenInclude(l => l.Product).FirstOrDefault(o => o.OrderId == orderId);
+            var deleteingOrder = db.Orders.Include(o => o.LineItems).ThenInclude(l => l.Product)
+                .FirstOrDefault(o => o.OrderId == orderId);
             if (deleteingOrder == null)
             {
                 return 0;

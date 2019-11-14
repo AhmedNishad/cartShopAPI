@@ -6,6 +6,7 @@ var editButton = document.getElementById('edit-line-item')
 var submitButton = document.getElementById('submit-button')
 var productPickerNew = document.getElementById('product-picker-new')
 var productPickerEdit = document.getElementById('product-picker-edit')
+var editFormContainer = document.getElementById('edit-form-container')
 
 let showingEdit = false
 var lineItemContainer = document.getElementById("line-item-container");
@@ -23,45 +24,45 @@ var totalOutput = document.getElementById("total-output")
 var removeButtons = document.getElementsByClassName('remove-button')
 
 
-
-function getSelectedOptionElement(selectedId) {
-    for (var p = 0; p < productPickerNew.options.length; p++) {
-        var productElem = productPickerNew.options[p]
-        
-            
-        if (productElem.value == selectedId) {
-            return productElem
-
-        }
-    }
-    return null
-    
-}
 submitButton.disabled = true;
 
 addLineItem.disabled = true
 
 
+// Update autocompleted element ( For adding new items )
+function getSelectedOptionElement(selectedId) {
+    for (var p = 0; p < productPickerNew.options.length; p++) {
+        var productElem = productPickerNew.options[p]
+        if (productElem.value == selectedId) {
+            return productElem
+        }
+    }
+    return null
+}
+
+
+// Change selected product on product input
 productInput.addEventListener('input', (e) => {
     editingFormField.hidden = true
-   if (e.target.value.length > 1) {
-        console.log(productPickerNew.value)
-       selectedProduct = getSelectedOptionElementByInput(productPickerNew.value) //getSelectedOptionElement(productPickerNew.value)
+    if (e.target.value.length > 1) {
+        selectedProduct = getSelectedOptionElement(productPickerNew.value) //getSelectedOptionElement(productPickerNew.value)
+    } else {
+        selectedProduct = productSelect.options[0]
     }
 }
 )
 
-productSelect.addEventListener('change', (e) => {
+// Change selected product on select event (Automated via element)
+productSelect.addEventListener('select', (e) => {
     console.log(productSelect.value)
     selectedProduct = getSelectedOptionElement(productSelect.value)
-    
-}
+    }
 )
 
+// Checks for line item and edit form visibility
 quantityInputNew.addEventListener('input', (e) => {
     editingFormField.hidden = true
 
-    console.log(selectedProduct)
     quantityInputNew.max = selectedProduct.getAttribute('data-unit-quantity')
     if (e.target.value == "" || parseInt(e.target.value) < 1 || parseInt(e.target.value) > quantityInputNew.max) {
         addLineItem.disabled = true
@@ -70,6 +71,7 @@ quantityInputNew.addEventListener('input', (e) => {
     }
 })
 
+// Checks for edit button disabling
 quantityInputEdit.addEventListener('input', (e) => {
     
     if (e.target.value == "" || parseInt(e.target.value) < 1 || parseInt(e.target.value) > quantityInputEdit.max) {
@@ -79,40 +81,105 @@ quantityInputEdit.addEventListener('input', (e) => {
     }
 })
 
+
+
+// Adding edit functionality on initialization
 for (var i = 0; i < editableItems.length; i++) {
     editableItems[i].addEventListener("click", editingItem)
-    editableChildren = editableItems[i].children
 }
 
+// Adding remove button functionality on initialization
+for (var j = 0; j < removeButtons.length; j++) {
+    removeButtons[j].addEventListener('click', removeLineItem);
+}
+
+// Add new line item with hidden inputs
+addLineItem.addEventListener('click', e => {
+    selectedProduct = getSelectedOptionElement(productPickerNew.parentElement.children[2].value)
+    e.preventDefault();
+    var lineItemElement = document.createElement("tr");
+    var productIdElement = document.createElement("td");
+
+
+    productIdElement.innerHTML = `<input type='hidden' value='${selectedProduct.value}' name='[${idCounter}].product.id' /> 
+                                 <h6>${selectedProduct.getAttribute('data-product-name')}</h6>`
+
+    var quantityElement = document.createElement("td");
+    quantityElement.innerHTML = `<input type="hidden" value="${parseInt(quantityInputNew.value)}" name="[${idCounter}].quantity" /> 
+                                <h6>${quantityInputNew.value}</h6>`
+
+    var totalElement = document.createElement("td");
+
+    var lineTotal = (parseInt(selectedProduct.getAttribute('data-unit-price')) * parseInt(quantityInputNew.value));
+
+    var itemAlreadyExists = checkIfPreviouslySubmitted(selectedProduct.value, quantityInputNew.value, lineTotal)
+
+    if (!itemAlreadyExists) {
+        totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <h6>${lineTotal}</h6>`
+        var removeElement = document.createElement("td");
+        var removeButton = document.createElement("button")
+        removeButton.innerText = "Remove"
+        removeButton.classList.add("btn", "btn-danger")
+
+        // Update Product quantity for element. Now obsolete because we're overriding updated elements
+        //  productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
+
+        lineItemElement.addEventListener("click", editingItem)
+        removeButton.addEventListener('click', removeLineItem)
+        removeButton.classList.add('remove-button')
+        removeElement.appendChild(removeButton)
+
+        lineItemElement.setAttribute('data-product-quantity', selectedProduct.getAttribute('data-unit-quantity'))
+        lineItemElement.setAttribute('data-product-name', selectedProduct.getAttribute('data-product-name'))
+        lineItemElement.setAttribute('data-product-price', selectedProduct.getAttribute('data-unit-price'))
+        lineItemElement.setAttribute('data-product-id', selectedProduct.value)
+
+        lineItemElement.classList.add('editable-item')
+        lineItemElement.appendChild(productIdElement);
+        lineItemElement.appendChild(quantityElement);
+        lineItemElement.appendChild(totalElement);
+        lineItemElement.appendChild(removeElement);
+        lineItemContainer.appendChild(lineItemElement);
+        idCounter++
+        addIdCounter()
+        updateTotal()
+        checkSubmit()
+        quantityInputNew.value = ""
+        productInput.value = ""
+        addLineItem.disabled = true
+    }
+})
+
+// Handle when row is being edited. Update data attributes on edit form
 function editingItem(e) {
     var tableRow = e.target.parentElement.parentElement
-    console.log(tableRow)
     if (tableRow.classList.contains('editable-item') && !e.target.classList.contains('remove-button')) {
         editingFormField.hidden = false
 
         editingFormField.children[0].firstElementChild.innerText = tableRow.getAttribute('data-product-name')
         editingFormField.setAttribute('price', tableRow.getAttribute('data-product-price'))
-        
-       
+
+
         editingFormField.setAttribute('data-product-id', tableRow.getAttribute('data-product-id'))
         tableRow.insertAdjacentElement('afterend', editingFormField)
-       // editingFormField.style.display = 'block'
-       
-        editingFormField.children[1].firstElementChild.value = parseInt(tableRow.children[1].innerText)
-        editingFormField.children[1].firstElementChild.max = tableRow.getAttribute('data-product-quantity')
-        editButton.disabled = false
-        console.log(editingFormField)
 
+        editingFormField.children[1].firstElementChild.placeholder = parseInt(tableRow.children[1].innerText)
+        editingFormField.children[1].firstElementChild.max = tableRow.getAttribute('data-product-quantity')
+        editingFormField.children[1].firstElementChild.focus()
+        editButton.disabled = false
+        addIdCounter()
+    } else {
+        editingFormField.hidden = true
     }
 }
 
 editButton.addEventListener('click', editLineItem)
 
+// Update hidden inputs and displays
 function editLineItem(e) {
     e.preventDefault()
     
     var newlyAddedQuantity = e.target.parentElement.parentElement.children[1].firstElementChild.value
-    console.log(editingFormField.getAttribute('data-product-id'))
     var modifyingRow = findModifyingRow(editingFormField.getAttribute('data-product-id'))
     var newPrice = parseInt(newlyAddedQuantity) * parseInt(modifyingRow.getAttribute('data-product-price'))
     var quantityDisplay = modifyingRow.children[1].children[1]
@@ -122,22 +189,26 @@ function editLineItem(e) {
     quantityDisplay.innerText = newlyAddedQuantity
     priceDisplay.innerText = newPrice
     priceInput.value = parseInt(newPrice)
+    submitButton.disabled = false
+    editingFormField.hidden = true;
     quantityInput.value = parseInt(newlyAddedQuantity)
+    updateTotal()   
     checkSubmit()
 }
 
+// Find corresponding form to get necessary data attributes
 function findModifyingRow(productId) {
     for (var o = 0; o < lineItemContainer.children.length; o++) {
         var possibleRow = lineItemContainer.children[o]
         if (possibleRow.getAttribute('data-product-id') == productId) {
 
-            console.log(possibleRow)
             return possibleRow
         }
     }
     return null
 }
 
+// Update names of hidden inputs to support model validation
 function addIdCounter() {
     var orderId = 0
     var lineItems = lineItemContainer.children
@@ -158,67 +229,10 @@ function addIdCounter() {
     }
 }
 
-addLineItem.addEventListener('click', e => {
-    selectedProduct = getSelectedOptionElement(productPickerNew.parentElement.children[2].value)
-    e.preventDefault();
-    //if(e.target.)
-    var lineItemElement = document.createElement("tr");
-    var productIdElement = document.createElement("td");
 
-    console.log(selectedProduct)
-    console.log(productPickerNew.options[productPickerNew.parentElement.children[2].selectedIndex])
-    
-    productIdElement.innerHTML = `<input type='hidden' value='${selectedProduct.value}' name='[${idCounter}].product.id' /> 
-                                 <h6>${selectedProduct.getAttribute('data-product-name')}</h6>`
-
-    var quantityElement = document.createElement("td");
-    quantityElement.innerHTML = `<input type="hidden" value="${parseInt(quantityInputNew.value)}" name="[${idCounter}].quantity" /> 
-                                <h6>${quantityInputNew.value}</h6>`
-
-    var totalElement = document.createElement("td");
-
-    var lineTotal = (parseInt(selectedProduct.getAttribute('data-unit-price')) * parseInt(quantityInputNew.value));
-
-    var itemAlreadyExists = checkIfPreviouslySubmitted(selectedProduct.value, quantityInputNew.value, lineTotal)
-
-    if (!itemAlreadyExists) {
-        totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <h6>${lineTotal}</h6>`
-        var removeElement = document.createElement("td");
-        var removeButton = document.createElement("button")
-        removeButton.innerText = "Remove"
-        console.log(removeButton)
-        removeButton.classList.add("btn", "btn-danger")
-
-        // Update Product quantity for element. Now obsolete because we're overriding updated elements
-        //  productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
-
-        removeButton.addEventListener('click', removeLineItem)
-        removeElement.appendChild(removeButton)
-
-        addLineItem.setAttribute('data-product-quantity', selectedProduct.getAttribute('data-product-quantity'))
-        addLineItem.setAttribute('data-product-name', selectedProduct.getAttribute('data-product-name'))
-        addLineItem.setAttribute('data-product-price', selectedProduct.getAttribute('data-product-price'))
-        addLineItem.setAttribute('data-product-id', selectedProduct.getAttribute('data-product-id'))
-
-        lineItemElement.classList.add('editable-item')
-        lineItemElement.addEventListener("click", editingItem)
-        lineItemElement.appendChild(productIdElement);
-        lineItemElement.appendChild(quantityElement);
-        lineItemElement.appendChild(totalElement);
-        lineItemElement.appendChild(removeElement);
-        lineItemContainer.appendChild(lineItemElement);
-        idCounter++
-        addIdCounter()
-        updateTotal()
-        checkSubmit()
-        quantityInputNew.value = ""
-        productInput.value = ""
-        addLineItem.disabled = true
-    }
-})
-
+// If previously available in list. Override
 function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
-    debugger
+  
     for (var i = 0; i < lineItemContainer.children.length; i++) {
         var hiddenProductInput = lineItemContainer.children[i].firstElementChild.firstElementChild
         var productQuantityHiddenInput = lineItemContainer.children[i].children[1].firstElementChild
@@ -239,6 +253,7 @@ function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
     return false;
 }
 
+// Update display of total at bottom of page
 function updateTotal() {
     var total = 0;
     let lineItems = lineItemContainer.children
@@ -250,23 +265,23 @@ function updateTotal() {
     totalOutput.innerText = total
 }
 
-for (var j = 0; j < removeButtons.length; j++) {
-    removeButtons[j].addEventListener('click', removeLineItem);
-}
 
+// Remove entire row of inputs and displays. Update total and id counters
 function removeLineItem(e) {
     e.preventDefault()
     var toRemove = e.target.parentElement.parentElement;
     productPickerNew.value = toRemove.getAttribute('data-product-id')
     editingFormField.hidden = true
-    
+    editFormContainer.append(editingFormField)
     lineItemContainer.removeChild(toRemove);
     addIdCounter()
     updateTotal()
     checkSubmit()
 }
 
+// Check if submit button should be visible
 function checkSubmit() {
+    console.log(lineItemContainer.children.length)
     if (lineItemContainer.children.length > 0) {
         submitButton.disabled = false
     } else {

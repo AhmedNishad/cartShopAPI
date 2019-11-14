@@ -16,10 +16,11 @@ namespace Shopping.Business.Entities
         public int Id { get; set; }
         public OrderBO Order { get; set; }
         public int OrderId { get; set; }
+        public int LinePrice { get; set; }
         [Required]
         [Range(1, 1000)]
         public int Quantity { get; set; }
-        public int Total { get; set; }
+        public int Total { get { return LinePrice * Quantity; } }
         public ProductBO Product{ get; set; }
     }
 }

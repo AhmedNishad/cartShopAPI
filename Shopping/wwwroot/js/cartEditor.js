@@ -14,9 +14,10 @@ var idCounter = 0;
 var submitButton = document.getElementById("submit-button");
 var customerInput = document.getElementById("customer-input");
 
-submitButton.disabled = true;
-
+checkSubmit()
 addLineItem.disabled = true
+
+// Add button functionality checks
 quantityInput.addEventListener('input', (e) => {
     quantityInput.max = productPicker.options[productPicker.selectedIndex].getAttribute('data-unit-quantity')
     if (e.target.value == "" || parseInt(e.target.value) < 1 || parseInt(e.target.value) > quantityInput.max) {
@@ -26,18 +27,18 @@ quantityInput.addEventListener('input', (e) => {
     }
 })
 
+// Submit button checks
 customerInput.addEventListener('input', (e) => {
-    if (customerInput.value == "") {
+    if (customerInput.value == "" && customerInput.placeholder == "") {
         submitButton.disabled = true;
-
     }
 })
 
+// Remove all hidden inputs
 function addFunctionality() {
     if (lineItemContainer.children.length ) {
         let tableRows = lineItemContainer.children
         for (let i = 0; i < tableRows.length; i++) {
-            console.log(tableRows[i].children[3].firstElementChild)
             tableRows[i].children[3].firstElementChild.addEventListener('click', removeLineItem);
         }
     }
@@ -66,7 +67,6 @@ addLineItem.addEventListener('click', e => {
         var removeElement = document.createElement("td");
         var removeButton = document.createElement("button")
         removeButton.innerText = "Remove"
-        console.log(removeButton)
         removeButton.classList.add("btn", "btn-danger")
 
         // Update Product quantity for element. Now obsolete because we're overriding updated elements
@@ -87,9 +87,11 @@ addLineItem.addEventListener('click', e => {
         quantityInput.value = ""
         productInput.value = ""
         addLineItem.disabled = true
+        productInput.focus()
     }
 })
 
+// If item of same product previously added. Replace new quantity and total
 function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
     for (var i = 0; i < lineItemContainer.children.length; i++) {
         var hiddenProductInput = lineItemContainer.children[i].firstElementChild.firstElementChild
@@ -104,13 +106,13 @@ function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
             totalOfLine.innerText = lineTotal;
             updateTotal()
             quantityInput.value = ""
-            console.log("Exists")
             return true
         }
     }
     return false;
 }
 
+// Update total display at bottom of page
 function updateTotal() {
     var total = 0;
     let lineItems = lineItemContainer.children
@@ -121,6 +123,7 @@ function updateTotal() {
     totalOutput.innerText = total
 }
 
+// Update hidden input names to accomodate model binding
 function addIdCounter() {
     var orderId = 0
     var lineItems = lineItemContainer.children
@@ -134,6 +137,7 @@ function addIdCounter() {
     }
 }
 
+// Remove the table row including hidden inputs
 function removeLineItem(e) {
     e.preventDefault()
     var toRemove = e.target.parentElement.parentElement;
@@ -142,10 +146,12 @@ function removeLineItem(e) {
     addIdCounter()
     updateTotal()
     checkSubmit()
+    productInput.focus()
 }
 
-function checkSubmit(){
-    if (lineItemContainer.children.length > 0) {
+// Check if the submit should be disabled. (If line items list is empty)
+function checkSubmit() {
+    if (lineItemContainer.children.length > 0 && (customerInput.value != "" && customerInput.placeHolder != "")) {
         submitButton.disabled = false
     } else {
         submitButton.disabled = true

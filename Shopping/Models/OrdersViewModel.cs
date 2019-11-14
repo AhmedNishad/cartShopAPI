@@ -14,5 +14,7 @@ namespace Shopping.Models
         public bool Next { get; set;}
         public int PageNumber { get; set; }
         public string SortBy { get; set; }
+        public bool SuccessfullyAdded { get; set; }
+        public bool SuccessfullyDeleted { get; set; }
     }
 }
