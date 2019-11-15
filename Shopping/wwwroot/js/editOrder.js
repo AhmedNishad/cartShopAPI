@@ -18,6 +18,7 @@ var productQuantity = document.getElementById("product-quantity")
 var idCounter = 0
 var quantityInputNew = document.getElementById("quantity-input-new");
 var quantityInputEdit = document.getElementById("quantity-input-edit");
+quantityInputEdit.classList.add('col-3')
 
 var selectedProduct;
 var totalOutput = document.getElementById("total-output")
@@ -27,6 +28,8 @@ var removeButtons = document.getElementsByClassName('remove-button')
 submitButton.disabled = true;
 
 addLineItem.disabled = true
+
+
 
 
 // Update autocompleted element ( For adding new items )
@@ -59,6 +62,13 @@ productSelect.addEventListener('select', (e) => {
     }
 )
 
+productSelect.addEventListener('change', (e) => {
+    console.log(productSelect.value)
+    selectedProduct = getSelectedOptionElement(productSelect.value)
+    quantityInputNew.focus()
+}
+)
+
 // Checks for line item and edit form visibility
 quantityInputNew.addEventListener('input', (e) => {
     editingFormField.hidden = true
@@ -75,9 +85,9 @@ quantityInputNew.addEventListener('input', (e) => {
 quantityInputEdit.addEventListener('input', (e) => {
     
     if (e.target.value == "" || parseInt(e.target.value) < 1 || parseInt(e.target.value) > quantityInputEdit.max) {
-        editButton.disabled = true
+        editButton.hidden = true
     } else {
-        editButton.disabled = false
+        editButton.hidden = false
     }
 })
 
@@ -102,11 +112,11 @@ addLineItem.addEventListener('click', e => {
 
 
     productIdElement.innerHTML = `<input type='hidden' value='${selectedProduct.value}' name='[${idCounter}].product.id' /> 
-                                 <h6>${selectedProduct.getAttribute('data-product-name')}</h6>`
+                                 <p>${selectedProduct.getAttribute('data-product-name')}</p>`
 
     var quantityElement = document.createElement("td");
     quantityElement.innerHTML = `<input type="hidden" value="${parseInt(quantityInputNew.value)}" name="[${idCounter}].quantity" /> 
-                                <h6>${quantityInputNew.value}</h6>`
+                                <p>${quantityInputNew.value}</p>`
 
     var totalElement = document.createElement("td");
 
@@ -115,11 +125,11 @@ addLineItem.addEventListener('click', e => {
     var itemAlreadyExists = checkIfPreviouslySubmitted(selectedProduct.value, quantityInputNew.value, lineTotal)
 
     if (!itemAlreadyExists) {
-        totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <h6>${lineTotal}</h6>`
+        totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <p>${lineTotal}</p>`
         var removeElement = document.createElement("td");
-        var removeButton = document.createElement("button")
-        removeButton.innerText = "Remove"
-        removeButton.classList.add("btn", "btn-danger")
+        var removeButton = document.createElement("i")
+        removeButton.classList.add("btn", "btn-danger", 'material-icons')
+        removeButton.innerText = "remove"
 
         // Update Product quantity for element. Now obsolete because we're overriding updated elements
         //  productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
@@ -135,6 +145,7 @@ addLineItem.addEventListener('click', e => {
         lineItemElement.setAttribute('data-product-id', selectedProduct.value)
 
         lineItemElement.classList.add('editable-item')
+        lineItemElement.classList.add('bg-newly-added')
         lineItemElement.appendChild(productIdElement);
         lineItemElement.appendChild(quantityElement);
         lineItemElement.appendChild(totalElement);
@@ -148,6 +159,7 @@ addLineItem.addEventListener('click', e => {
         productInput.value = ""
         addLineItem.disabled = true
     }
+    productInput.focus()
 })
 
 // Handle when row is being edited. Update data attributes on edit form
@@ -163,10 +175,11 @@ function editingItem(e) {
         editingFormField.setAttribute('data-product-id', tableRow.getAttribute('data-product-id'))
         tableRow.insertAdjacentElement('afterend', editingFormField)
 
+        editingFormField.children[1].firstElementChild.value = ""
         editingFormField.children[1].firstElementChild.placeholder = parseInt(tableRow.children[1].innerText)
         editingFormField.children[1].firstElementChild.max = tableRow.getAttribute('data-product-quantity')
         editingFormField.children[1].firstElementChild.focus()
-        editButton.disabled = false
+        editButton.hidden = true
         addIdCounter()
     } else {
         editingFormField.hidden = true
@@ -186,11 +199,14 @@ function editLineItem(e) {
     var priceDisplay = modifyingRow.children[2].children[1]
     var quantityInput = modifyingRow.children[1].firstElementChild
     var priceInput = modifyingRow.children[2].firstElementChild
+    modifyingRow.classList.add('bg-newly-added')
     quantityDisplay.innerText = newlyAddedQuantity
     priceDisplay.innerText = newPrice
     priceInput.value = parseInt(newPrice)
     submitButton.disabled = false
     editingFormField.hidden = true;
+    editingFormField.children[1].firstElementChild.value = ""
+    editFormContainer.appendChild(editingFormField)
     quantityInput.value = parseInt(newlyAddedQuantity)
     updateTotal()   
     checkSubmit()
@@ -234,6 +250,7 @@ function addIdCounter() {
 function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
   
     for (var i = 0; i < lineItemContainer.children.length; i++) {
+        var lineElement = lineItemContainer.children[i]
         var hiddenProductInput = lineItemContainer.children[i].firstElementChild.firstElementChild
         var productQuantityHiddenInput = lineItemContainer.children[i].children[1].firstElementChild
         var productQuantity = lineItemContainer.children[i].children[1].children[1]
@@ -244,7 +261,9 @@ function checkIfPreviouslySubmitted(productId, quantity, lineTotal) {
             productQuantity.innerText = quantity
             lineTotalHiddenInput.value = lineTotal
             totalOfLine.innerText = lineTotal;
+            lineElement.classList.add('bg-newly-added')
             updateTotal()
+            checkSubmit()
             quantityInputNew.value = ""
             console.log("Exists")
             return true

@@ -5,18 +5,25 @@
 }
 
 <a asp-action="ViewOrdersForCustomer" asp-route-customerId="@Model.Order.Customer.Id">Show All</a>
-<h1>Customer - @Model.Order.Customer.Name</h1>
-<h3>Date - @Model.Order.Date.ToShortDateString()</h3>
+@if (Model.SuccessfullyUpdated)
+{
+    <div class="bg-success" id="update-text">
+        <h4 class="text-white text-center">Successfully Updated</h4>
+    </div>
+}
+<h2>Order for @Model.Order.Customer.Name on  @Model.Order.Date.ToShortDateString()</h2>
 
-<a class="btn btn-warning col-1.5 text-right offset-10" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">Delete Order</a>
+<a data-toggle="tooltip" title="Delete Order" class="btn btn-secondary col-1.5 offset-10" asp-action="DeleteOrder" asp-route-orderId="@Model.Order.Id">
+    <i class="material-icons">delete_forever</i></a>
 
 <form asp-action="UpdateOrder" method="post" autocomplete="off">
+    <br />
     <table class="table">
         <thead>
             <tr>
-                <th>Product Name</th>
+                <th>Product</th>
                 <th>Quantity</th>
-                <th>Total</th>
+                <th>Total ($)</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -26,46 +33,46 @@
                     <h6 class="text-white text-center"></h6>
                 </td>
                 <td><input id="quantity-input-edit" type="number" name="quantity" /><input type="hidden" value="0" name="lineId" /></td>
-                <td><button class="btn btn-info" id="edit-line-item">Edit</button></td>
+                <td><i class="btn btn-light material-icons" id="edit-line-item">edit</i></td>
             </tr>
-            <tbody id="line-item-container">
+        <tbody id="line-item-container">
             @foreach (var item in Model.LineItems)
             {
                 <tr class="editable-item" data-line-item-id="@item.Id" data-product-quantity="@item.Product.QuantityAtHand" data-product-name="@item.Product.ProductName" data-product-price="@item.Product.UnitPrice" data-product-id="@item.Product.Id">
-                    
-                    <td><input type="hidden" value="@item.Product.Id" name="[@lineIdCount].product.id" /><h6>@item.Product.ProductName</h6><input type="hidden" value="@item.Id" name="[@lineIdCount].id" /></td>
-                    <td><input type="hidden" value="@item.Quantity" name="[@lineIdCount].quantity" /><h6>@item.Quantity</h6></td>
-                    <td><input type="hidden" value="@item.Total" name="[@lineIdCount].total" /><h6>@item.Total</h6></td>
+
+                    <td><input type="hidden" value="@item.Product.Id" name="[@lineIdCount].product.id" /><p>@item.Product.ProductName</p><input type="hidden" value="@item.Id" name="[@lineIdCount].id" /></td>
+                    <td><input type="hidden" value="@item.Quantity" name="[@lineIdCount].quantity" /><p>@item.Quantity</p></td>
+                    <td><input type="hidden" value="@item.Total" name="[@lineIdCount].total" /><p>@item.Total</p></td>
                     <td>
-                        <button class="btn btn-danger remove-button">Remove</button>
+                        <i class="material-icons btn btn-danger remove-button">remove</i>
                     </td>
                 </tr>
 
             }
-            </tbody>
-            <tr>
-                <td>
-                    <div class="autocomplete">
-                        <select hidden class="dropdown" id="product-picker-new" name="productId">
-                            @foreach (var product in Model.Products)
-                            {
-                                <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
-                                        value="@product.Id">
-                                    @product.ProductName
-                                </option>
-                            }
-                        </select>
-                        <input id="product-input" class="form-control autocomplete-text" type="text" />
-                        <select id="product-select" hidden class="autocomplete-dropdown form-control">
-                            <option disabled value="0">Select Product</option>
-                        </select>
-                    </div>
-                </td>
-                <td><div class="form-group row"><input class="form-control col-md-8" min="1" id="quantity-input-new" type="number" name="quantity" /></div></td>
-                <td><h4 id="quantity-output"></h4></td>
-                <td><button id="add-line-item" class="btn btn-dark">Add</button></td>
-            </tr>
-        
+        </tbody>
+        <tr>
+            <td>
+                <div class="autocomplete">
+                    <select hidden class="dropdown" id="product-picker-new" name="productId">
+                        @foreach (var product in Model.Products)
+                        {
+                            <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                                    value="@product.Id">
+                                @product.ProductName
+                            </option>
+                        }
+                    </select>
+                    <input id="product-input" class="form-control autocomplete-text" type="text" />
+                    <select id="product-select" hidden class="autocomplete-dropdown form-control">
+                        <option disabled value="0">Select Product</option>
+                    </select>
+                </div>
+            </td>
+            <td><div class="form-group row"><input class="form-control col-md-8" min="1" id="quantity-input-new" type="number" name="quantity" /></div></td>
+            <td><h4 id="quantity-output"></h4></td>
+            <td><button id="add-line-item" class="btn btn-primary"><i class="material-icons">add</i></button></td>
+        </tr>
+
         <tfoot>
             <tr>
                 <td><h4>Grand Total </h4></td>
@@ -87,3 +94,9 @@
 </form>
 
 <script src="~/js/editOrder.js"></script>
+<script>
+    var updateText = document.getElementById("update-text")
+    setTimeout(() => {
+        updateText.hidden = true
+    }, 8000)
+</script>

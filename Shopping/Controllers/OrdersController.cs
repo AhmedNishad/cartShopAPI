@@ -76,6 +76,7 @@ namespace Shopping.Controllers
                     // Container to get the created orderId
                     last = results[results.Count - 1];
                 }
+                // Remove placeholder orderID element
                 results.Remove(last);
                 // If there are many line items with quantity too high redirect to add order with order items entered 
                 //with appropriate quantities
@@ -96,9 +97,13 @@ namespace Shopping.Controllers
             }
         }
         [HttpGet]
-        public IActionResult ViewOrder(int orderId)
+        public IActionResult ViewOrder(int orderId, bool updated = false)
         {
             var model = new OrderViewModel();
+            if (updated)
+            {
+                model.SuccessfullyUpdated = true;
+            }
             model.LineItems = mapper.Map<List<OrderLineItem>>(orderService.GetLineItemsForOrder(orderId));
             model.Order = mapper.Map<Order>(orderService.GetOrderById(orderId));
             model.Products = mapper.Map<List<Product>>(productService.GetProducts());
@@ -140,7 +145,7 @@ namespace Shopping.Controllers
             {
                 return View("ErrorDisplay", new ErrorModel { Message = e.Message });
             }
-            return RedirectToAction("ViewOrder",new { orderId = orderID });
+            return RedirectToAction("ViewOrder",new { orderId = orderID, updated=true });
         }
 
         public IActionResult ViewOrders(int pageNumber, string sortBy, bool successfullyDeleted = false)

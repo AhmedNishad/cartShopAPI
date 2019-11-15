@@ -13,13 +13,13 @@
         </div>
     </div>
 
-<h1>Add Order</h1>
+<h4>Add Order</h4>
 
 
 <form  asp-action="AddOrder" method="post" autocomplete="off">
     <div class="row">
         <div class="form-group col-md-6">
-            <label class="form-control" asp-for="@Model.AssociatedCustomer">Customer</label>
+            <label class="form-control" asp-for="@Model.AssociatedCustomer">Customer <i class="material-icons">face</i></label>
 
             <div class="autocomplete">
                 <select hidden name="customerId">
@@ -35,7 +35,7 @@
             </div>
         </div>
         <div class="form-group col-md-6">
-            <label class="form-control" for="data">Date</label>
+            <label class="form-control" for="data">Date <i class="material-icons">date_range</i></label>
             <input class="form-control" name="date" id="date-picker" type="date" />
         </div>
     </div>
@@ -60,18 +60,6 @@
                     </tr>
                 }
             }
-            @*<tr>
-                <td><input type="hidden" value="2" name="[0].product.id" /> Carrots</td>
-                <td><input type="hidden" value="12" name="[0].quantity" />12</td>
-                <td><input type="hidden" value="120" name="[0].total" />120</td>
-                <td><button>Remove</button></td>
-            </tr>
-            <tr>
-                <td><input type="hidden" value="1" name="[1].product.id" /> Maggots</td>
-                <td><input type="hidden" value="12" name="[1].quantity" />2</td>
-                <td><input type="hidden" value="120" name="[1].total" />240</td>
-                <td><button>Remove</button></td>
-            </tr>*@
         </tbody>
         <tr>
             <td>
@@ -93,11 +81,11 @@
             </td>
             <td><div class="form-group row"><input class="form-control col-md-8" min="1" id="quantity-input" type="number" name="quantity" /></div></td>
             <td><h4 id="quantity-output"></h4></td>
-            <td><button id="add-line-item" class="btn btn-dark">Add</button></td>
+            <td><button id="add-line-item" class="btn btn-primary"><i class="material-icons">add</i></button></td>
         </tr>
         <tr>
             <td>
-                <h2 class="text-center">Grand Total </h2>
+                <h5 class="text-center">Grand Total </h5>
             </td>
             <td></td>
             <td><h2> $<span id="total-output">0</span></h2></td>

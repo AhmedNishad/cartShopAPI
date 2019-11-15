@@ -65,9 +65,11 @@ addLineItem.addEventListener('click', e => {
     if (!itemAlreadyExists) {
         totalElement.innerHTML = `<input type="hidden" value="${lineTotal}" name="[${idCounter}].total" /> <h6>${lineTotal}</h6>`
         var removeElement = document.createElement("td");
-        var removeButton = document.createElement("button")
-        removeButton.innerText = "Remove"
-        removeButton.classList.add("btn", "btn-danger")
+        var removeButton = document.createElement("i")
+       // removeButton.innerHTML += "<i class='material-icons'>remove</i>"
+        //removeButton.innerHTML += "Remove"
+        removeButton.classList.add("btn", "btn-danger", 'material-icons')
+        removeButton.innerText = 'remove'
 
         // Update Product quantity for element. Now obsolete because we're overriding updated elements
       //  productPicker.options[productPicker.selectedIndex].setAttribute("data-unit-quantity", parseInt(quantityInput.max) - parseInt(quantityInput.value))
@@ -151,7 +153,7 @@ function removeLineItem(e) {
 
 // Check if the submit should be disabled. (If line items list is empty)
 function checkSubmit() {
-    if (lineItemContainer.children.length > 0 && (customerInput.value != "" && customerInput.placeHolder != "")) {
+    if (lineItemContainer.children.length > 0 && (customerInput.value != "" || customerInput.placeHolder != "")) {
         submitButton.disabled = false
     } else {
         submitButton.disabled = true

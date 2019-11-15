@@ -11,5 +11,6 @@ namespace Shopping.Models
         public Order Order { get; set; }
         public List<OrderLineItem> LineItems { get; set; }
         public List<Product> Products { get; set; }
+        public bool SuccessfullyUpdated { get; set; }
     }
 }

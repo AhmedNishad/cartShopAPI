@@ -100,9 +100,6 @@ namespace Shopping.Data.Access
             // No null check as is already being checked in service methods
             
             updatedOrder.Total = updatedOrder.LineItems.Sum(l => l.Total);
-            
-           // UpdateLineItemsForOrder(existingLineItems, updatedOrder.OrderId);
-            // db.Orders.Update(updatedOrder);
             db.SaveChanges();
         }
 

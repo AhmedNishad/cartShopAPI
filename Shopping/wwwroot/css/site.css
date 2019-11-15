@@ -44,6 +44,7 @@ html {
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
+  font-family: 'Roboto';
 }
 .footer {
   position: absolute;
@@ -84,3 +85,13 @@ body {
 .site-title{
     padding-top: 15%;
 }
+.editable-item:hover{
+    background: #eee;
+    transition-duration:0.3s;
+}
+
+.bg-newly-added {
+    background: #97ffa2;
+    transition-duration: 0.8s;
+}
+

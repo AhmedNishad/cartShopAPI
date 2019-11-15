@@ -4,7 +4,7 @@
 }
 
 
-<a class="btn btn-link" asp-action="Index">Back</a>
+<a class="btn btn-link" asp-action="Index"><i class="material-icons">arrow_back</i></a>
 
 @if (Model.SuccessfullyAdded)
 {
@@ -19,11 +19,11 @@
     </div>
 }
 
-<h1>Orders</h1>
+<h4>Orders</h4>
 <form asp-action="ViewOrdersForCustomer" method="get">
-    <div class="row">
+    <div class="m-2 row">
         <div class="col-5 offset-3">
-            <h5>For Customer @Model.SelectedCustomerName</h5>
+            <h5><i class="material-icons">search</i> For Customer @Model.SelectedCustomerName</h5>
             <div class="autocomplete">
                 <select hidden name="customerId">
                     @foreach (var customer in Model.Customers)
@@ -31,12 +31,13 @@
                         <option value="@customer.Id">@customer.Name</option>
                     }
                 </select>
-                <input class="form-control autocomplete-text" type="text" />
+                <input class="form-control autocomplete-text" type="text" /> 
                 <select hidden class="autocomplete-dropdown form-control">
                     <option value="0">Select Customer</option>
                 </select>
             </div>
-            <input type="submit" class="btn btn-success" value="Search" />
+            
+            <input type="submit" class="m-1 btn btn-success" value="Search" />
             <a class="btn btn-primary" asp-action="ViewOrders">All</a>
         </div>
     </div>
@@ -52,41 +53,43 @@
         <table class="table">
             <thead>
                 <tr>
-                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Customer">Customer</a></td>
-                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Total">Amount</a></td>
-                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Latest">Date</a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Customer">Customer<i class="material-icons">arrow_drop_down</i></a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Total">Amount<i class="material-icons">arrow_drop_down</i></a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Latest">Date<i class="material-icons">arrow_drop_down</i></a></td>
                     <td>Actions</td>
                 </tr>
             </thead>
-            @foreach (var order in Model.Orders)
-            {
-                <tr>
-                    <td>
-                        <h3>@order.Customer.Name </h3>
-                    </td>
-                    <td>
-                        <h4> $@order.Total</h4>
-                    </td>
-                    <td>
-                        <h5>@order.Date.ToShortDateString()</h5>
-                    </td>
-                    <td>
-                        <a asp-action="ViewOrder" class="btn btn-secondary" asp-route-orderId="@order.Id">Edit</a>
-                        <a asp-action="DeleteOrder" class="btn btn-warning" asp-route-orderId="@order.Id">Delete</a>
-                    </td>
-                </tr>
-            }
+            <tbody class="text-capitalize">
+                @foreach (var order in Model.Orders)
+                {
+                    <tr>
+                        <td>
+                            <h6>@order.Customer.Name </h6>
+                        </td>
+                        <td>
+                            <h6>$@order.Total</h6>
+                        </td>
+                        <td>
+                            <h6>@order.Date.ToShortDateString()</h6>
+                        </td>
+                        <td>
+                            <a asp-action="ViewOrder" class="btn btn-secondary" asp-route-orderId="@order.Id"><i class="material-icons">edit</i></a>
+                            <a asp-action="DeleteOrder" class="btn btn-warning" asp-route-orderId="@order.Id"><i class="material-icons">delete_forever</i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
         </table>
-        <div class="col-md-5 offset-2">
+        <div class="col-md-5 offset-4">
             @if (Model.PageNumber != 0)
             {
-                <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber-1)">Back</a>
+                <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber-1)"><i class="material-icons">keyboard_arrow_left</i></a>
 
             }
-            <span class="bg-dark text-white ">@(Model.PageNumber + 1)</span>
+            <span class="p-2 bg-dark text-white ">@(Model.PageNumber + 1)</span>
             @if (Model.Next)
             {
-                <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber+1)">Next</a>
+                <a asp-action="ViewOrders" class="btn btn-dark" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber+1)"><i class="material-icons">keyboard_arrow_right</i></a>
             }
         </div>
 
@@ -97,9 +100,9 @@
     var successText = document.getElementById("success-text")
     setTimeout(() => {
         successText.hidden = true
-    }, 5000);
-    var deleteText = document.getElementById("delete-text")
+    }, 8000);
+       var deleteText = document.getElementById("delete-text")
     setTimeout(() => {
         deleteText.hidden = true
-    }, 5000);
+    }, 8000);
 </script>

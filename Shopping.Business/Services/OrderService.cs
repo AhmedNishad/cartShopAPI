@@ -18,7 +18,7 @@ namespace Shopping.Business.Services
         private ICustomerRepository customerRepository { get; }
         private IProductRepository productRepository { get; }
         private readonly IMapper mapper;
-        public int skipCount = 3;
+        public int skipCount = 5;
 
         public OrderService(IOrderRepository orderRepository,IProductRepository productRepository,
             ICustomerRepository customerRepository, IMapper mapper)
@@ -98,10 +98,9 @@ namespace Shopping.Business.Services
         //    repository.UpdateOrder(mapper.Map<OrderDO>(updatedOrder));
         //}
 
-        public List<OrderLineItemBO> AddOrder(int CustomerId, DateTime date, List<OrderLineItemBO> orderLineItems)
+        private FilteredItems FilterLineItems(List<OrderLineItemBO> orderLineItems)
         {
-            // Loop through entered line items and store all the line items who'se quantity is too high in a list with a 
-            //quantity of what is currently available
+            var filtered = new FilteredItems();
             var orderLineCopy = new List<OrderLineItemBO>();
             foreach (var item in orderLineItems)
             {
@@ -113,7 +112,7 @@ namespace Shopping.Business.Services
             {
                 var item = orderLineCopy[i];
                 int remaining = repository.UpdateProductQuantity(item.Quantity, item.Product.Id);
-                if (remaining < 1)
+                if (remaining < 0)
                 {
                     // Update the item quantity sent back to the page to whats remaining
                     item.Quantity = -1 * remaining;
@@ -122,8 +121,19 @@ namespace Shopping.Business.Services
                     continue;
                 }
             }
+            filtered.InvalidItems = invalidItems;
+            filtered.ValidItems = orderLineItems;
+            return filtered;
+        }
+        public List<OrderLineItemBO> AddOrder(int CustomerId, DateTime date, List<OrderLineItemBO> orderLineItems)
+        {
+            // Loop through entered line items and store all the line items who'se quantity is too high in a list with a 
+            //      quantity of what is currently available
+            var filteredItems = FilterLineItems(orderLineItems);
+            var invalidItems = filteredItems.InvalidItems;
+            orderLineItems = filteredItems.ValidItems;
 
-            // If there isn't a single item in orderline items return empty list. Will be returning an inadequate quantity error
+            // If there isn't a single item in orderline items throw an inadequate quantity error
             if (orderLineItems.Count < 1)
             {
                 throw new Exception($"There are inadequate products");
@@ -210,7 +220,6 @@ namespace Shopping.Business.Services
             return repository.DeleteOrder(Id);
         }
 
-
         public void UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId)
         {
             var existingOrder = GetOrderById(orderId);
@@ -246,7 +255,6 @@ namespace Shopping.Business.Services
                         OrderId = existingOrder.Id,
                         Quantity = item.Quantity
                     };
-                    lineItems.Remove(item);
                     newLineItems.Add(newItem);
                     existingOrder.LineItems.Add(newItem);
                     // Deduct new product quantitiy
