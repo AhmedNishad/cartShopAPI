@@ -5,9 +5,11 @@ VisualStudioVersion = 16.0.29418.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shopping", "Shopping\Shopping.csproj", "{DCBFA30D-C909-413D-8764-B7CA6FB715B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopping.Business", "Shopping.Business\Shopping.Business.csproj", "{DCE8953B-947F-4EB3-8644-13B57903C186}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shopping.Business", "Shopping.Business\Shopping.Business.csproj", "{DCE8953B-947F-4EB3-8644-13B57903C186}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopping.Data", "Shopping.Data\Shopping.Data.csproj", "{B56AAC05-A0E6-4594-A3E2-44083D04BE1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shopping.Data", "Shopping.Data\Shopping.Data.csproj", "{B56AAC05-A0E6-4594-A3E2-44083D04BE1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopping.API", "Shopping.API\Shopping.API.csproj", "{8FC61BEE-6101-4071-BEDE-8FA2F8EEE052}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{B56AAC05-A0E6-4594-A3E2-44083D04BE1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B56AAC05-A0E6-4594-A3E2-44083D04BE1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B56AAC05-A0E6-4594-A3E2-44083D04BE1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FC61BEE-6101-4071-BEDE-8FA2F8EEE052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FC61BEE-6101-4071-BEDE-8FA2F8EEE052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FC61BEE-6101-4071-BEDE-8FA2F8EEE052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FC61BEE-6101-4071-BEDE-8FA2F8EEE052}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
