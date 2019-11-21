@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shopping.Business;
 using Shopping.Business.Entities;
 using Shopping.Business.Services;
-using Shopping.Entities;
+using Shopping.ViewModels;
 using Shopping.Models;
 
 namespace Shopping.Controllers
@@ -32,20 +32,20 @@ namespace Shopping.Controllers
         public IActionResult ViewProducts()
         {
             var model = new ProductsViewModel();
-            model.Products = mapper.Map<List<Product>>(productService.GetProducts());
+            model.Products = mapper.Map<List<ProductVM>>(productService.GetProducts());
             return View(model);
         }
 
         [HttpGet]
         public IActionResult ViewProduct(int productId)
         {
-            var model = new Product();
-            model = mapper.Map<Product>(productService.GetProductById(productId));
+            var model = new ProductVM();
+            model = mapper.Map<ProductVM>(productService.GetProductById(productId));
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult UpdateProduct(Product product)
+        public IActionResult UpdateProduct(ProductVM product)
         {
             if (!ModelState.IsValid)
             {
@@ -66,13 +66,13 @@ namespace Shopping.Controllers
         [HttpGet]
         public IActionResult AddProduct()
         {
-            var model = new Product();
+            var model = new ProductVM();
 
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult AddProduct(Product product)
+        public IActionResult AddProduct(ProductVM product)
         {
             if (!ModelState.IsValid)
             {

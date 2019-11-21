@@ -42,5 +42,15 @@ namespace Shopping.Business.Services
             var mapped = mapper.Map<List<CustomerBO>>(customers);
             return  mapped;
         }
+
+        public void DeleteCustomer(int id)
+        {
+            repository.DeleteCustomerById(id);
+        }
+
+        public void UpdateCustomer(CustomerBO customer)
+        {
+            repository.UpdateCustomer(mapper.Map<CustomerDO>(customer));
+        }
     }
 }

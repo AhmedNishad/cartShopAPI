@@ -1,22 +1,29 @@
-﻿@model Shopping.Models.IndexViewModel
+﻿@model Shopping.ViewModels.IndexViewModel
 @{
     ViewData["Title"] = "Index";
 }
 
-    <div class="row">
-        <div class="col-5 offset-3">
-            <div class="row">
-                <a class="col-4 btn btn-light" asp-action="ViewOrders">Orders</a>
-                <a class="col-4 btn btn-light" asp-controller="Products" asp-action="ViewProducts">Products</a>
-                <a class="col-4 btn btn-light" asp-controller="Customers" asp-action="AddCustomer">Customer</a>
-            </div>
+<div class="row">
+    <div class="col-5 offset-3">
+        <div class="row">
+            <a class="col-4 btn btn-light" asp-action="ViewOrders">Orders</a>
+            <a class="col-4 btn btn-light" asp-controller="Products" asp-action="ViewProducts">Products</a>
+            <a class="col-4 btn btn-light" asp-controller="Customers" asp-action="AddCustomer">Customer</a>
         </div>
     </div>
+</div>
 
 <h4>Add Order</h4>
 
+@if (Model.QuantityError)
+{
+    <div class="bg-danger" id="error-text">
+        <h4 class="text-center text-white">You have requested more products than are available. These are the quantities that
+        are available</h4>
+    </div>
+}
 
-<form  asp-action="AddOrder" method="post" autocomplete="off">
+<form asp-action="AddOrder" method="post" autocomplete="off">
     <div class="row">
         <div class="form-group col-md-6">
             <label class="form-control" asp-for="@Model.AssociatedCustomer">Customer <i class="material-icons">face</i></label>
@@ -67,7 +74,8 @@
                     <select hidden class="dropdown" id="product-picker" name="productId">
                         @foreach (var product in Model.Products)
                         {
-                            <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice" data-unit-quantity="@product.QuantityAtHand"
+                            <option class="dropdown-item" data-product-name="@product.ProductName" data-unit-price="@product.UnitPrice"
+                                    data-unit-quantity="@product.QuantityAtHand"
                                     value="@product.Id">
                                 @product.ProductName
                             </option>
@@ -107,3 +115,9 @@
 
 <script src="~/js/cartEditor.js"></script>
 
+<script>
+    var errorText = document.getElementById("error-text")
+    setTimeout(() => {
+        errorText.hidden = true
+    }, 8000);
+</script>

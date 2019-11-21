@@ -45,5 +45,14 @@ namespace Shopping.Business.Services
             return result;
         }
 
+        public void DeleteProduct(int id)
+        {
+            repository.DeleteProductById(id);
+        }
+
+        public int UpdateProduct(int id, ProductBO updatedProduct)
+        {
+           return repository.UpdateProduct(id, mapper.Map<ProductDO>(updatedProduct));
+        }
     }
 }

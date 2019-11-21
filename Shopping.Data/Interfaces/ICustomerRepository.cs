@@ -10,6 +10,7 @@ namespace Shopping.Data.Interfaces
         int AddCustomer(CustomerDO customer);
         List<CustomerDO> GetCustomers();
         CustomerDO GetCustomerById(int id);
-
+        void DeleteCustomerById(int id);
+        void UpdateCustomer(CustomerDO customerDO);
     }
 }

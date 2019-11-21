@@ -43,5 +43,27 @@ namespace Shopping.Data.Access
             }
             return customer;
         }
+
+        public void DeleteCustomerById(int id)
+        {
+            var customerToRemove = db.Customers.FirstOrDefault(c => c.CustomerId == id);
+            if(customerToRemove == null)
+            {
+                throw new Exception($"Customer of id {id} does not exist");
+            }
+            db.Customers.Remove(customerToRemove);
+            db.SaveChanges();
+        }
+
+        public void UpdateCustomer(CustomerDO customer)
+        {
+            var customerToUpdate = db.Customers.FirstOrDefault(c => c.CustomerId == customer.CustomerId);
+            if(customerToUpdate == null)
+            {
+                throw new Exception("Customer not found");
+            }
+            customerToUpdate = customer;
+            db.SaveChanges();
+        }
     }
 }

@@ -71,7 +71,7 @@ namespace Shopping.Data.Access
             return remaining;
         }
 
-        public int UpdateProductQuantity(int toReduce, ProductDO product)
+        private int UpdateProductQuantity(int toReduce, ProductDO product)
         {
             if (product.QuantityAtHand == 0)
             {
@@ -88,7 +88,7 @@ namespace Shopping.Data.Access
             db.SaveChanges();
             return remaining;
         }
-        public void UpdateOrder(OrderDO updatedOrder)
+        private void UpdateOrder(OrderDO updatedOrder)
         {
             db.Orders.Update(updatedOrder);
             db.SaveChanges();
@@ -203,7 +203,7 @@ namespace Shopping.Data.Access
         }
 
 
-        public int DeleteLineItemById(int lineId)
+        private int DeleteLineItemById(int lineId)
         {
             var item = db.OrderLineItems.Include(l => l.Product).Include(l => l.Order).AsNoTracking().FirstOrDefault(l => l.LineId == lineId);
 
@@ -229,19 +229,14 @@ namespace Shopping.Data.Access
 
         public int DeleteOrder(int orderId)
         {
-            var deleteingOrder = db.Orders.Include(o => o.LineItems).ThenInclude(l => l.Product)
+            var deletingOrder = db.Orders.Include(o => o.LineItems).ThenInclude(l => l.Product)
                 .FirstOrDefault(o => o.OrderId == orderId);
-            if (deleteingOrder == null)
+            if (deletingOrder == null)
             {
                 return 0;
             }
-            // Update Product quantities
-            foreach (var lineItem in deleteingOrder.LineItems)
-            {
-                int updatedQuantity = lineItem.Product.QuantityAtHand + lineItem.Quantity;
-                productRepository.QuantityUpdateForProduct(lineItem.Product.ProductId, updatedQuantity);
-            }
-            db.Orders.Remove(deleteingOrder);
+            
+            db.Orders.Remove(deletingOrder);
             db.SaveChanges();
             return 1;
         }

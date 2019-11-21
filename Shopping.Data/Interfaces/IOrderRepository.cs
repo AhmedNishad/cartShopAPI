@@ -11,8 +11,6 @@ namespace Shopping.Data.Interfaces
         int AddOrder(OrderDO order);
         OrderDO GetOrderForCustomerOnDate(int customerId, DateTime date);
         int UpdateProductQuantity(int toReduce, int productId);
-        int UpdateProductQuantity(int toReduce, ProductDO product);
-        void UpdateOrder(OrderDO updatedOrder);
         void UpdateOrder(int updatedOrderId);
         List<OrderLineItemDO> GetLineItemsForOrder(int OrderId);
         IQueryable<OrderDO> GetOrders();
@@ -23,7 +21,6 @@ namespace Shopping.Data.Interfaces
         void UpdateLineItemsForOrder(List<OrderLineItemDO> orderLineItems, int orderId);
         List<OrderDO> GetOrdersForCustomer(int customerId);
         int DeleteLineItem(int lineId);
-        int DeleteLineItemById(int lineId);
         int DeleteOrder(int orderId);
     }
 }

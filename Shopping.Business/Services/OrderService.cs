@@ -34,7 +34,7 @@ namespace Shopping.Business.Services
             return mapper.Map<OrderBO>(entity);
         }
 
-        public OrderPage GetOrders(int page, string sort="Latest")
+        public OrderPage GetOrders(int page, int sort=0)
         {
             var Page = new OrderPage();
             var sortedOrders = repository.GetOrders();
@@ -43,10 +43,10 @@ namespace Shopping.Business.Services
             // Sorting logic
             switch (sort)
             {
-                case "Customer":
+                case 1:
                     sortedOrders = sortedOrders.OrderBy(o => o.Customer.Name);
                     break;
-                case "Total":
+                case 2:
                     sortedOrders = sortedOrders.OrderByDescending(o => o.Total);
                     break;
                 default:
@@ -98,40 +98,76 @@ namespace Shopping.Business.Services
         //    repository.UpdateOrder(mapper.Map<OrderDO>(updatedOrder));
         //}
 
-        private FilteredItems FilterLineItems(List<OrderLineItemBO> orderLineItems)
+        private FilteredItems ValidateLineItems(List<OrderLineItemBO> orderLineItems)
         {
-            var filtered = new FilteredItems();
             var orderLineCopy = new List<OrderLineItemBO>();
             foreach (var item in orderLineItems)
             {
                 orderLineCopy.Add(item);
             }
             var invalidItems = new List<OrderLineItemBO>();
-            int ItemCount = orderLineItems.Count;
             for (int i = 0; i < orderLineCopy.Count; i++)
             {
                 var item = orderLineCopy[i];
-                int remaining = repository.UpdateProductQuantity(item.Quantity, item.Product.Id);
-                if (remaining < 0)
+                var product = productRepository.GetProductById(item.Product.Id);
+                // Check if there enough products remaining
+                int quantityRemaining = product.QuantityAtHand - item.Quantity;
+                if (quantityRemaining < 0)
                 {
-                    // Update the item quantity sent back to the page to whats remaining
-                    item.Quantity = -1 * remaining;
+                    // Update the item quantity sent back to the page to what is remaining at hand
+                    item.Quantity = -1 * quantityRemaining;
                     invalidItems.Add(item);
                     orderLineItems.Remove(item);
                     continue;
                 }
             }
+            var filtered = new FilteredItems();
             filtered.InvalidItems = invalidItems;
             filtered.ValidItems = orderLineItems;
             return filtered;
         }
-        public List<OrderLineItemBO> AddOrder(int CustomerId, DateTime date, List<OrderLineItemBO> orderLineItems)
+
+        private OrderBO FindExistingOrder(int customerId, DateTime date)
         {
+            OrderBO existingOrder= null;
+            if (repository.GetOrders().ToList().Exists(o => ((o.Customer.CustomerId == customerId)
+            && (o.Date.ToShortDateString() == date.ToShortDateString()))))
+            {
+                // If order exists get existing Order
+                existingOrder = mapper.Map<OrderBO>(repository.GetOrderForCustomerOnDate(customerId, date));
+            }
+            return existingOrder;
+        }
+       
+        /// <summary>
+        ///  Creates a new order for a given customer on a given date. 
+        ///  Updates the product quantities of valid items
+        ///  If Order exists for the same date, appends the product quantities
+        ///  and updates the existing order
+        ///  { Throws error when none of the items are valid }
+        /// </summary>
+        /// <param name="CustomerId"></param>
+        /// <param name="date"></param>
+        /// <param name="orderLineItems"></param>
+        /// <returns> List of Rejected Line Items (Quantity Too High) </returns>
+        public OrderAddedResult AddOrder(int CustomerId, DateTime date, List<OrderLineItemBO> orderLineItems)
+        {
+            var addedResult = new OrderAddedResult();
+            bool isUpdated = false;
+            //      Step 1 : Validate Line items
+            var validatedItems = ValidateLineItems(orderLineItems);
+           
             // Loop through entered line items and store all the line items who'se quantity is too high in a list with a 
             //      quantity of what is currently available
-            var filteredItems = FilterLineItems(orderLineItems);
-            var invalidItems = filteredItems.InvalidItems;
-            orderLineItems = filteredItems.ValidItems;
+
+            var invalidItems = validatedItems.InvalidItems;
+            orderLineItems = validatedItems.ValidItems;
+
+            // Update Product Quantities
+            foreach(var item in orderLineItems)
+            {
+                repository.UpdateProductQuantity(item.Quantity, item.Product.Id);
+            }
 
             // If there isn't a single item in orderline items throw an inadequate quantity error
             if (orderLineItems.Count < 1)
@@ -139,19 +175,13 @@ namespace Shopping.Business.Services
                 throw new Exception($"There are inadequate products");
             }
 
+            //       Step 2 : Find Existing Order ( If Exists )
+
             // Check if Order Present for same customer on same date
-            bool orderExists = false;
-            var existingOrder = new OrderBO();
-            if (repository.GetOrders().ToList().Exists(o => ((o.Customer.CustomerId == CustomerId)
-            && (o.Date.ToShortDateString() == date.ToShortDateString()))))
-            {
-                orderExists = true;
-                // If order exists get existing Order
-                existingOrder = mapper.Map<OrderBO>(repository.GetOrderForCustomerOnDate(CustomerId, date));
-            }
-            int associatedOrderId = 0;
+            var existingOrder = FindExistingOrder(CustomerId, date);
+            
              // For order that doesn't exist add the line items after creating the order
-            if (!orderExists)
+            if (existingOrder == null)
             {
                 var order = new OrderDO();
                 order.Customer = customerRepository.GetCustomerById(CustomerId);
@@ -159,7 +189,6 @@ namespace Shopping.Business.Services
                 order.Total = orderLineItems.Sum(l => l.Total);
                 int createdOrderId = repository.AddOrder(mapper.Map<OrderDO>(order));
 
-                associatedOrderId = createdOrderId;
                 order.OrderId = createdOrderId;
                 repository.AddLineItemsForOrder(mapper.Map<List<OrderLineItemDO>>(orderLineItems),mapper
                     .Map<OrderDO>(order));
@@ -167,7 +196,6 @@ namespace Shopping.Business.Services
             // For existing order. Add the order details to each line item and then update the order
             else
             {
-                associatedOrderId = existingOrder.Id;
                 var newListOfItems = existingOrder.LineItems;
                 // repository.UpdateLineItemsForOrder(mapper.Map<List<OrderLineItemDO>>(orderLineItems), existingOrder.Id);
                 foreach (var newItem in orderLineItems)
@@ -177,13 +205,16 @@ namespace Shopping.Business.Services
                      newListOfItems.Add(newItem);
                 }
                 existingOrder.LineItems = mapper.Map<List<OrderLineItemBO>>(newListOfItems);
-                repository.UpdateLineItemsForOrder(mapper.Map<List<OrderLineItemDO>>(newListOfItems), associatedOrderId);
+                repository.UpdateLineItemsForOrder(mapper.Map<List<OrderLineItemDO>>(newListOfItems), existingOrder.Id);
                 repository.UpdateOrder(existingOrder.Id);
+                isUpdated = true;
             }
             
-            // Adds the created or existing orderId to end of the list being returned to controller
-            invalidItems.Add(new OrderLineItemBO() { OrderId = associatedOrderId });
-            return invalidItems;
+            //      Step 3 : Construct Response Object
+
+            addedResult.InvalidItems = invalidItems;
+            addedResult.Updated = isUpdated; 
+            return addedResult;
         }
 
         // Unimplimented
@@ -217,31 +248,54 @@ namespace Shopping.Business.Services
 
         public int DeleteOrder(int Id)
         {
+            var deletingOrder = repository.GetOrderById(Id);
+            // Update Product quantities
+            foreach (var lineItem in deletingOrder.LineItems)
+            {
+                int updatedQuantity = lineItem.Product.QuantityAtHand + lineItem.Quantity;
+                productRepository.QuantityUpdateForProduct(lineItem.Product.ProductId, updatedQuantity);
+            }
             return repository.DeleteOrder(Id);
         }
 
-        public void UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId)
+        /// <summary>
+        /// Updates the line item for the given order. Deletes the items that don't exist in the incoming list
+        /// Adds the new line items to the order and updates the items that have been changed.
+        /// </summary>
+        /// <param name="lineItems">Updated Line Items from controller</param>
+        /// <param name="orderId">Order ID Of order being updated</param>
+        /// <returns>List of invalid items that are not valid (Quantity too high)</returns>
+        public OrderUpdatedResult UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId)
         {
+            var updatedResult = new OrderUpdatedResult();
+            updatedResult.Date = repository.GetOrderById(orderId).Date;
+            var validatedItems = ValidateLineItems(lineItems);
+
+            lineItems = validatedItems.ValidItems;
             var existingOrder = GetOrderById(orderId);
             var existingItems = existingOrder.LineItems;
 
+            //      Case 1 : Line items have been removed
+
             // Remove items that don't exist in the new order. Delete respective items
-            for (int i = 0; i < existingItems.Count; i++ )
+            for (int i = 0; i < existingItems.Count; i++)
             {
                 var oldItem = existingItems[i];
-                if (!lineItems.Exists(l=> l.Id == oldItem.Id))
+                if (!lineItems.Exists(l => l.Id == oldItem.Id))
                 {
                     existingOrder.LineItems.Remove(oldItem);
                     repository.DeleteLineItem(oldItem.Id);
                     // Add the quantity of the deleted line item
-                    productRepository.QuantityUpdateForProduct(oldItem.Product.Id, 
+                    productRepository.QuantityUpdateForProduct(oldItem.Product.Id,
                         oldItem.Product.QuantityAtHand + oldItem.Quantity);
                 }
             }
 
+            //      Case 2 : New Line Items have been added
+
             // Sort through and find the line items without an Id. To find the new Line items
             var newLineItems = new List<OrderLineItemBO>();
-            for(int i = 0; i < lineItems.Count; i++)
+            for (int i = 0; i < lineItems.Count; i++)
             {
                 var item = lineItems[i];
                 if (item.Id == 0)
@@ -260,7 +314,15 @@ namespace Shopping.Business.Services
                     // Deduct new product quantitiy
                     repository.UpdateProductQuantity(item.Quantity, item.Product.Id);
                 }
-                else
+            }
+
+            //      Case 3 : Existing Products have been Changed
+
+            // Update the product quantities that have been added
+            for(int i = 0; i < lineItems.Count; i++)
+            {
+                var item = lineItems[i];
+                if(item.Id != 0)
                 {
                     var changedOrder = existingOrder.LineItems.FirstOrDefault(l => l.Id == item.Id);
                     // Add on difference between new product quantity and existing quantity
@@ -278,6 +340,9 @@ namespace Shopping.Business.Services
 
             // Update the order properties and update in the db
             repository.UpdateOrder(existingOrder.Id);
+
+            updatedResult.InvalidItems = validatedItems.InvalidItems;
+            return updatedResult;
         }
     }
 }

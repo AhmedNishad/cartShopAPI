@@ -8,11 +8,11 @@ namespace Shopping.Business
     public interface IOrderService
     {
         OrderBO GetOrderById(int orderId);
-        List<OrderLineItemBO> AddOrder(int customerId, DateTime date, List<OrderLineItemBO> orderLineItems);
-        OrderPage GetOrders(int page, string sort);
+        OrderAddedResult AddOrder(int customerId, DateTime date, List<OrderLineItemBO> orderLineItems);
+        OrderPage GetOrders(int page, int sort);
         List<OrderBO> GetOrdersForCustomer(int customerId);
         List<OrderLineItemBO> GetLineItemsForOrder(int orderId);
         int DeleteOrder(int Id);
-        void UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId);
+        OrderUpdatedResult UpdateLineItemsForOrder(List<OrderLineItemBO> lineItems, int orderId);
     }
 }

@@ -29,6 +29,19 @@ namespace Shopping.API.Controllers
             return Ok(productService.GetProducts());
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            try
+            {
+                return Ok(productService.GetProductById(id));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpPost]
         public IActionResult PostProduct(Product product)
         {
@@ -41,13 +54,18 @@ namespace Shopping.API.Controllers
                 return BadRequest(e.Message);
             }
         }
-        [HttpPut("{id}")]
-        public IActionResult PutProduct(int id,[FromBody] int Quantity)
+
+        [HttpPut("/{id}/quantity")]
+        public IActionResult UpdateProductQuantity(int id,[FromBody] Product UpdatedProduct)
         {
+            if(UpdatedProduct.Id != id)
+            {
+                return BadRequest("Product ID does not match");
+            }
             try
             {
-                int createdProductId = productService.QuantityUpdateForProduct(id, Quantity);
-                return RedirectToAction("Get", new { id = createdProductId });
+                int updatedProductId = productService.QuantityUpdateForProduct(id, UpdatedProduct.QuantityAtHand);
+                return RedirectToAction("Get", new { id = updatedProductId });
             }
             catch (Exception e)
             {
@@ -55,13 +73,33 @@ namespace Shopping.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        [HttpPut("{id}")]
+        public IActionResult UpdateProduct(int id, [FromBody] Product UpdatedProduct)
+        {
+            if (UpdatedProduct.Id != id)
+            {
+                return BadRequest("Product ID does not match");
+            }
+            try
+            {
+                int updatedProductId = productService.UpdateProduct(id, mapper.Map<ProductBO>(UpdatedProduct));
+                return RedirectToAction("Get", new { id = updatedProductId });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpDelete("{id")]
+        public IActionResult Delete(int id)
         {
             try
             {
-                return Ok(productService.GetProductById(id));
-            }catch(Exception e)
+                productService.DeleteProduct(id);
+                return Ok("Successfully delete product");
+            }
+            catch(Exception e)
             {
                 return BadRequest(e.Message);
             }

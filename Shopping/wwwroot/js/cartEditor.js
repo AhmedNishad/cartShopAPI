@@ -1,8 +1,12 @@
 ﻿var datePicker = document.getElementById("date-picker");
-var date = new Date();
-var day = date.getDate().toString().length > 1 ? date.getDate() : "0" + date.getDate().toString()
-var month = date.getMonth().toString().length > 1 ? date.getMonth() : "0" + date.getMonth().toString()
-datePicker.value = `${date.getFullYear()}-${date.getMonth() + 1}-${day}`;
+
+// Automatically assign the current date to the date picker
+    var date = new Date();
+    var day = date.getDate().toString().length > 1 ? date.getDate() : "0" + date.getDate().toString()
+    var month = date.getMonth().toString().length > 1 ? date.getMonth() : "0" + date.getMonth().toString()
+    datePicker.value = `${date.getFullYear()}-${date.getMonth() + 1}-${day}`;
+
+
 var productPicker = document.getElementById("product-picker");
 var productInput = document.getElementById("product-input")
 var quantityInput = document.getElementById("quantity-input");

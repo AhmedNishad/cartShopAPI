@@ -11,5 +11,7 @@ namespace Shopping.Business
         int QuantityUpdateForProduct(int id, int newQuantity);
         int AddProduct(ProductBO product);
         List<ProductBO> GetProducts();
+        void DeleteProduct(int id);
+        int UpdateProduct(int id, ProductBO updatedProduct);
     }
 }

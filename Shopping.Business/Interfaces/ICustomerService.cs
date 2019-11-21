@@ -9,6 +9,8 @@ namespace Shopping.Business
     {
         CustomerBO GetCustomerById(int customerId);
         int AddCustomer(CustomerBO customer);
+        void UpdateCustomer(CustomerBO customer);
         List<CustomerBO> GetCustomers();
+        void DeleteCustomer(int id);
     }
 }

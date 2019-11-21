@@ -4,16 +4,16 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Shopping.Entities
+namespace Shopping.ViewModels
 {
-    public class Order
+    public class OrderVM
     {
         public int Id { get; set; }
         public int Total { get; set; }
-        public Customer Customer { get ; set; }
+        public CustomerVM Customer { get ; set; }
         [Required]
         public DateTime Date { get; set; }
         [MinLength(1)]
-        public List<OrderLineItem> LineItems { get; set; }
+        public List<OrderLineItemVM> LineItems { get; set; }
     }
 }

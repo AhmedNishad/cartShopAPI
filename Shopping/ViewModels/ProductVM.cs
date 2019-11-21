@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Shopping.Entities
+namespace Shopping.ViewModels
 {
-    public class Product
+    public class ProductVM
     {
         public int Id { get; set; }
         [Required]

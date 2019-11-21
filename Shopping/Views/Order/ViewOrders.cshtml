@@ -1,4 +1,4 @@
-﻿@model Shopping.Models.OrdersViewModel
+﻿@model Shopping.ViewModels.OrdersViewModel
 @{
     ViewData["Title"] = "All Orders";
 }
@@ -18,6 +18,12 @@
         <h4 class="text-center text-white">Order Successfully Deleted</h4>
     </div>
 }
+@if (Model.SuccessfullyUpdated)
+{
+    <div class="bg-success" id="update-text">
+        <h4 class="text-center text-white">Existing Order Found, New Items have been Added to Order</h4>
+    </div>
+}
 
 <h4>Orders</h4>
 <form asp-action="ViewOrdersForCustomer" method="get">
@@ -31,12 +37,12 @@
                         <option value="@customer.Id">@customer.Name</option>
                     }
                 </select>
-                <input class="form-control autocomplete-text" type="text" /> 
+                <input class="form-control autocomplete-text" type="text" />
                 <select hidden class="autocomplete-dropdown form-control">
                     <option value="0">Select Customer</option>
                 </select>
             </div>
-            
+
             <input type="submit" class="m-1 btn btn-success" value="Search" />
             <a class="btn btn-primary" asp-action="ViewOrders">All</a>
         </div>
@@ -53,9 +59,9 @@
         <table class="table">
             <thead>
                 <tr>
-                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Customer">Customer<i class="material-icons">arrow_drop_down</i></a></td>
-                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Total">Amount<i class="material-icons">arrow_drop_down</i></a></td>
-                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="Latest">Date<i class="material-icons">arrow_drop_down</i></a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="1">Customer<i class="material-icons">arrow_drop_down</i></a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="2">Amount<i class="material-icons">arrow_drop_down</i></a></td>
+                    <td><a class="text-secondary" asp-action="ViewOrders" asp-route-sortBy="0">Date<i class="material-icons">arrow_drop_down</i></a></td>
                     <td>Actions</td>
                 </tr>
             </thead>
@@ -101,8 +107,13 @@
     setTimeout(() => {
         successText.hidden = true
     }, 8000);
-       var deleteText = document.getElementById("delete-text")
+    var deleteText = document.getElementById("delete-text")
     setTimeout(() => {
         deleteText.hidden = true
+    }, 8000);
+    
+    var updateText = document.getElementById("update-text")
+    setTimeout(() => {
+        updateText.hidden = true
     }, 8000);
 </script>

@@ -19,7 +19,7 @@ using Shopping.Data;
 using Shopping.Data.Access;
 using Shopping.Data.Interfaces;
 
-using Shopping.Entities;
+using Shopping.ViewModels;
 
 namespace Shopping
 {
@@ -28,17 +28,6 @@ namespace Shopping
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-           // productService = new ProductService();
-           // CustomerService = new CustomerService();
-            //MapperConfig = new MapperConfiguration(cfg => {
-            //    cfg.CreateMap<Product, ProductBO>().ReverseMap();
-            //    cfg.CreateMap<List<Product>, List<ProductBO>>().ReverseMap();
-            //    cfg.CreateMap<Customer, CustomerBO>().ReverseMap();
-            //    cfg.CreateMap<List<Customer>, List<CustomerBO>>().ReverseMap();
-            //    cfg.CreateMap<Order, OrderBO>().ReverseMap();
-            //    cfg.CreateMap<OrderLineItem, OrderLineItemBO>().ReverseMap();
-            //});
-            //Mapper = new Mapper(MapperConfig);
         }
         public Mapper Mapper { get; set; }
         public IConfiguration Configuration { get; }
@@ -49,7 +38,6 @@ namespace Shopping
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.

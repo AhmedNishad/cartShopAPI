@@ -56,5 +56,28 @@ namespace Shopping.Data.Access
             db.SaveChanges();
             return product.ProductId;
         }
+
+        public void DeleteProductById(int id)
+        {
+            var productToRemove = db.Products.FirstOrDefault(p => p.ProductId == id);
+            if(productToRemove == null)
+            {
+                throw new Exception($"Product of id {id} does not exist");
+            }
+            db.Products.Remove(productToRemove);
+            db.SaveChanges();
+        }
+
+        public int UpdateProduct(int id, ProductDO productDO)
+        {
+            var updatedProduct = db.Products.FirstOrDefault(p => p.ProductId == id);
+            if(updatedProduct == null)
+            {
+                throw new Exception("Product does not exist");
+            }
+            updatedProduct = productDO;
+            db.SaveChanges();
+            return id;
+        }
     }
 }

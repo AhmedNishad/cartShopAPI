@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Shopping.Entities
+namespace Shopping.ViewModels
 {
-    public class OrderLineItem
+    public class OrderLineItemVM
     {
         public int Id { get; set; }
-        public Order Order { get; set; }
+        public OrderVM Order { get; set; }
         public int OrderId { get; set; }
         [Required]
         [Range(1, 1000)]
@@ -17,6 +17,6 @@ namespace Shopping.Entities
         public int LinePrice { get; set; }
         
         public int Total { get { return Quantity * LinePrice; } }
-        public Product Product{ get; set; }
+        public ProductVM Product{ get; set; }
     }
 }

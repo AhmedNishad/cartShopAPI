@@ -11,6 +11,7 @@ namespace Shopping.Data.Interfaces
         List<ProductDO> GetProducts();
         ProductDO GetProductById(int id);
         int QuantityUpdateForProduct(int ProductId, int newQuantity);
-
+        void DeleteProductById(int id);
+        int UpdateProduct(int id, ProductDO productDO);
     }
 }

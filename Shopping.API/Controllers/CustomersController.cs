@@ -43,10 +43,40 @@ namespace Shopping.API.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public IActionResult UpdateCustomer(int id, Customer updatedCustomer)
+        {
+            if(id != updatedCustomer.Id)
+            {
+                return BadRequest("Id does not match request");
+            }
+            try
+            {
+                customerService.UpdateCustomer(mapper.Map<CustomerBO>(updatedCustomer));
+                return Ok($"Updated Customer {updatedCustomer.Name}");
+            }catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpGet("{id}")]
         public IActionResult GetCustomer(int id) 
         {
             return Ok(customerService.GetCustomerById(id));
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCustomer(int id)
+        {
+            try
+            {
+                customerService.DeleteCustomer(id);
+                return Ok("Customer successfully deleted");
+            }catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

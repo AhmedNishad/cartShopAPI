@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shopping.Business;
 using Shopping.Business.Entities;
 using Shopping.Business.Services;
-using Shopping.Entities;
+using Shopping.ViewModels;
 using Shopping.Models;
 
 namespace Shopping.Controllers
@@ -31,12 +31,12 @@ namespace Shopping.Controllers
         [HttpGet]
         public IActionResult AddCustomer()
         {
-            var model = new Customer();
+            var model = new CustomerVM();
             return View(model);
         }
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult AddCustomer(Customer customer)
+        public IActionResult AddCustomer(CustomerVM customer)
         {
             try
             {
